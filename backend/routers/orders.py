@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+import os
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import models, schemas
@@ -8,6 +10,29 @@ from database import get_db
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
 VALID_STATUSES = {"new", "confirmed", "preparing", "delivering", "delivered", "cancelled"}
+
+_NOTIFY_MSGS = {
+    "confirmed":  "✅ Buyurtmangiz #{id} tasdiqlandi! Tez orada tayyorlanadi 🍽️",
+    "preparing":  "👨‍🍳 Buyurtmangiz #{id} tayyorlanmoqda! Kutib turing...",
+    "delivering": "🚗 Buyurtmangiz #{id} yo'lda! Eshikni kuting 🏠",
+    "delivered":  "🟢 Buyurtmangiz #{id} yetkazildi! Ishtahangiz yo'l bo'lsin! 🙏",
+    "cancelled":  "❌ Buyurtmangiz #{id} bekor qilindi.",
+}
+
+
+def _tg_notify(chat_id: str, order_id: int, status: str) -> None:
+    token = os.getenv("BOT_TOKEN", "")
+    msg   = _NOTIFY_MSGS.get(status, "").replace("{id}", str(order_id))
+    if not token or not chat_id or not msg:
+        return
+    try:
+        httpx.post(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            json={"chat_id": chat_id, "text": msg},
+            timeout=5.0,
+        )
+    except Exception:
+        pass
 
 
 @router.get("", response_model=List[schemas.OrderOut])
@@ -47,6 +72,7 @@ def create_order(data: schemas.OrderCreate, db: Session = Depends(get_db)):
         total=data.total,
         items=[item.model_dump() for item in data.items],
         status="new",
+        telegram_chat_id=data.telegram_chat_id,
     )
     db.add(order)
     db.commit()
@@ -58,6 +84,7 @@ def create_order(data: schemas.OrderCreate, db: Session = Depends(get_db)):
 def update_order_status(
     order_id: int,
     data: schemas.OrderStatusUpdate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     _: models.Admin = Depends(get_current_admin),
 ):
@@ -69,6 +96,8 @@ def update_order_status(
     order.status = data.status
     db.commit()
     db.refresh(order)
+    if order.telegram_chat_id:
+        background_tasks.add_task(_tg_notify, order.telegram_chat_id, order.id, order.status)
     return order
 
 

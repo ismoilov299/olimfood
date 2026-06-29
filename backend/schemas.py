@@ -144,6 +144,7 @@ class OrderCreate(BaseModel):
     delivery: float = 15000
     total: float
     items: List[OrderItem]
+    telegram_chat_id: str = ""
 
 class OrderStatusUpdate(BaseModel):
     status: str
@@ -160,6 +161,7 @@ class OrderOut(BaseModel):
     total: float
     items: List[Any]
     status: str
+    telegram_chat_id: str = ""
     created_at: datetime
     updated_at: Optional[datetime] = None
 

@@ -83,6 +83,8 @@ class Order(Base):
     total      = Column(Float, default=0)
     # Items as JSON array
     items      = Column(JSON, default=list)
+    # Telegram integration
+    telegram_chat_id = Column(String(50), default="")
     # Status
     status     = Column(String(30), default="new")
     created_at = Column(DateTime(timezone=True), server_default=func.now())

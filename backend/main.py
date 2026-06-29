@@ -18,6 +18,7 @@ def _migrate():
         "ALTER TABLE banners ADD COLUMN cta_action VARCHAR(20) DEFAULT ''",
         "ALTER TABLE banners ADD COLUMN cta_target VARCHAR(500) DEFAULT ''",
         "ALTER TABLE categories ADD COLUMN image_url VARCHAR(500) DEFAULT ''",
+        "ALTER TABLE orders ADD COLUMN telegram_chat_id VARCHAR(50) DEFAULT ''",
     ]
     with engine.connect() as conn:
         for sql in stmts:

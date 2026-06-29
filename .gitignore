@@ -9,6 +9,10 @@ backend/uploads/
 *.egg-info/
 .env
 
+# Telegram Bot
+telegram_bot/venv/
+telegram_bot/bot_data.pkl
+
 # Node
 frontend/node_modules/
 frontend/dist/

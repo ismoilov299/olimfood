@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """
 OlimFood Telegram Bot
-Web-panel bilan to'liq sinxron ishlaydi:
-  - Foydalanuvchi: menyu, savatcha, buyurtma berish
-  - Admin: yangi buyurtma xabarnomasi + status tugmalari
-  - Web-panel: status o'zgarsa Telegram orqali xabar yuboradi
+Flow: /start → til tanlash → Web App tugmasi + bot menyu
+Admin: yangi buyurtma xabarnomasi + status tugmalari
+Sinxronlik: web-panelda status o'zgarsa foydalanuvchiga Telegram xabari
 """
 
 import os
@@ -12,12 +11,11 @@ import sys
 import logging
 from html import escape
 
-# Backend directory — SQLite DB always resolved from here
+# Backend path: bot istagan joydan ishga tushsa ham DB topiladi
 _BACKEND = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "backend")
 sys.path.insert(0, _BACKEND)
-os.chdir(_BACKEND)  # fix relative sqlite:///./olimfood.db path
+os.chdir(_BACKEND)          # sqlite:///./olimfood.db ni to'g'ri hal qiladi
 
-# Load .env from project root (if python-dotenv is installed)
 try:
     from dotenv import load_dotenv
     load_dotenv(os.path.join(_BACKEND, "..", ".env"))
@@ -25,9 +23,17 @@ except ImportError:
     pass
 
 from database import SessionLocal
-import models  # noqa: E402 (imported after path setup)
+import models
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+    WebAppInfo,
+)
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -48,6 +54,7 @@ logger = logging.getLogger(__name__)
 
 BOT_TOKEN  = os.getenv("BOT_TOKEN", "")
 ADMIN_CHAT = int(os.getenv("ADMIN_CHAT_ID", "0"))
+WEBAPP_URL = os.getenv("WEBAPP_URL", "").rstrip("/")
 DELIVERY   = 15_000
 
 # Conversation states
@@ -72,21 +79,183 @@ USER_MSGS = {
 
 PAY_LABELS = {"naqd": "💵 Naqd pul", "karta": "💳 Bank kartasi", "online": "📱 Online"}
 
+# ─── i18n ─────────────────────────────────────────────────────────────────────
+_I18N: dict[str, dict[str, str]] = {
+    "uz": {
+        "lang_prompt": "🌐 Tilni tanlang:",
+        "welcome": (
+            "🍽️ <b>OlimFood</b>ga xush kelibsiz!\n\n"
+            "Mazali taomlarni buyurtma qiling — tez yetkazib beramiz 🚀\n\n"
+            "Quyidagi tugma orqali ilovani oching 👇"
+        ),
+        "open_app":    "🛒  OlimFood — buyurtma berish",
+        "bot_menu":    "🍽️ Bot menyusi",
+        "cart":        "🛒 Savatcha",
+        "my_orders":   "📦 Buyurtmalarim",
+        "change_lang": "🌐 Tilni o'zgartirish",
+    },
+    "ru": {
+        "lang_prompt": "🌐 Выберите язык:",
+        "welcome": (
+            "🍽️ Добро пожаловать в <b>OlimFood</b>!\n\n"
+            "Заказывайте вкусные блюда — доставим быстро 🚀\n\n"
+            "Нажмите кнопку ниже, чтобы открыть приложение 👇"
+        ),
+        "open_app":    "🛒  OlimFood — сделать заказ",
+        "bot_menu":    "🍽️ Меню бота",
+        "cart":        "🛒 Корзина",
+        "my_orders":   "📦 Мои заказы",
+        "change_lang": "🌐 Сменить язык",
+    },
+    "en": {
+        "lang_prompt": "🌐 Choose language:",
+        "welcome": (
+            "🍽️ Welcome to <b>OlimFood</b>!\n\n"
+            "Order delicious food — delivered fast 🚀\n\n"
+            "Tap the button below to open the app 👇"
+        ),
+        "open_app":    "🛒  OlimFood — place order",
+        "bot_menu":    "🍽️ Bot menu",
+        "cart":        "🛒 Cart",
+        "my_orders":   "📦 My Orders",
+        "change_lang": "🌐 Change language",
+    },
+}
+
+
+def tr(ctx_or_lang, key: str) -> str:
+    lang = ctx_or_lang if isinstance(ctx_or_lang, str) else ctx_or_lang.user_data.get("lang", "uz")
+    return _I18N.get(lang, _I18N["uz"]).get(key, key)
+
+
 h   = lambda s: escape(str(s or ""))
 fmt = lambda n: f"{int(n):,}".replace(",", " ")
 
 
-# ─── Keyboards ────────────────────────────────────────────────────────────────
+# ─── Language selection ───────────────────────────────────────────────────────
 
-def main_kb(cart):
-    n = sum(i["qty"] for i in cart)
-    badge = f" ({n})" if n else ""
-    return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🍽️ Menyu",             callback_data="menu")],
-        [InlineKeyboardButton(f"🛒 Savatcha{badge}",   callback_data="cart")],
-        [InlineKeyboardButton("📦 Buyurtmalarim",      callback_data="my_orders")],
+_LANG_KB = InlineKeyboardMarkup([[
+    InlineKeyboardButton("🇺🇿 O'zbek", callback_data="lang_uz"),
+    InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
+    InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
+]])
+
+_LANG_PROMPT = "🌐 Tilni tanlang / Выберите язык / Choose language"
+
+
+async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """Always show language selection first."""
+    # Remove any existing reply keyboard before showing lang selection
+    if update.message:
+        await update.message.reply_text(
+            _LANG_PROMPT,
+            reply_markup=ReplyKeyboardRemove(),
+        )
+        await update.message.reply_text(_LANG_PROMPT, reply_markup=_LANG_KB)
+    else:
+        q = update.callback_query
+        await q.answer()
+        await q.message.reply_text(_LANG_PROMPT, reply_markup=_LANG_KB)
+
+
+async def cb_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """User picked a language — save it and show the welcome/WebApp screen."""
+    q    = update.callback_query
+    await q.answer()
+    lang = q.data[5:]           # "lang_uz" → "uz"
+    ctx.user_data["lang"] = lang
+    ctx.user_data.setdefault("cart", [])
+    await _send_welcome(q.message, ctx, edit=False)
+
+
+async def cb_change_lang(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    q = update.callback_query
+    await q.answer()
+    await q.message.reply_text(_LANG_PROMPT, reply_markup=_LANG_KB)
+
+
+# ─── Welcome / main screen ────────────────────────────────────────────────────
+
+def _welcome_kb(lang: str, cart: list) -> tuple[InlineKeyboardMarkup, "ReplyKeyboardMarkup | None"]:
+    """
+    Returns (inline_kb, reply_kb).
+    inline_kb  — navigation buttons inside the message.
+    reply_kb   — WebApp button at the keyboard level (None if no WEBAPP_URL).
+    """
+    n         = sum(i["qty"] for i in cart)
+    cart_badge = f" ({n})" if n else ""
+
+    inline_rows = []
+
+    # WebApp inline button (opens app inside Telegram)
+    if WEBAPP_URL:
+        url = f"{WEBAPP_URL}?lang={lang}"
+        if url.startswith("https://"):
+            webapp_btn = InlineKeyboardButton(tr(lang, "open_app"), web_app=WebAppInfo(url=url))
+        else:
+            # HTTP — use regular URL button (useful for local dev)
+            webapp_btn = InlineKeyboardButton(tr(lang, "open_app"), url=url)
+        inline_rows.append([webapp_btn])
+
+    inline_rows.append([InlineKeyboardButton(tr(lang, "bot_menu"), callback_data="menu")])
+    inline_rows.append([
+        InlineKeyboardButton(tr(lang, "cart") + cart_badge, callback_data="cart"),
+        InlineKeyboardButton(tr(lang, "my_orders"),         callback_data="my_orders"),
     ])
+    inline_rows.append([InlineKeyboardButton(tr(lang, "change_lang"), callback_data="change_lang")])
 
+    inline_kb = InlineKeyboardMarkup(inline_rows)
+
+    # Reply keyboard WebApp button (stays at the bottom of the chat)
+    reply_kb = None
+    if WEBAPP_URL:
+        url = f"{WEBAPP_URL}?lang={lang}"
+        if url.startswith("https://"):
+            reply_kb = ReplyKeyboardMarkup(
+                [[KeyboardButton(tr(lang, "open_app"), web_app=WebAppInfo(url=url))]],
+                resize_keyboard=True,
+                one_time_keyboard=False,
+            )
+
+    return inline_kb, reply_kb
+
+
+async def _send_welcome(msg, ctx: ContextTypes.DEFAULT_TYPE, *, edit: bool = False):
+    lang    = ctx.user_data.get("lang", "uz")
+    cart    = ctx.user_data.get("cart", [])
+    text    = tr(lang, "welcome")
+    ikb, rkb = _welcome_kb(lang, cart)
+
+    # 1. Activate the persistent WebApp button in the reply keyboard
+    if rkb:
+        await msg.reply_text("👇", reply_markup=rkb)
+
+    # 2. Send the main welcome message with inline navigation
+    await msg.reply_text(text, reply_markup=ikb, parse_mode=ParseMode.HTML)
+
+
+async def cb_main_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
+    """'🏠 Bosh sahifa' tugmasi."""
+    q = update.callback_query
+    await q.answer()
+    ctx.user_data.setdefault("cart", [])
+
+    # If no lang set yet, show lang selection
+    if "lang" not in ctx.user_data:
+        await q.message.reply_text(_LANG_PROMPT, reply_markup=_LANG_KB)
+        return
+
+    lang      = ctx.user_data.get("lang", "uz")
+    cart      = ctx.user_data["cart"]
+    ikb, _    = _welcome_kb(lang, cart)
+
+    try:
+        await q.edit_message_text(tr(lang, "welcome"), reply_markup=ikb, parse_mode=ParseMode.HTML)
+    except Exception:
+        await q.message.reply_text(tr(lang, "welcome"), reply_markup=ikb, parse_mode=ParseMode.HTML)
+
+
+# ─── Keyboards ────────────────────────────────────────────────────────────────
 
 def admin_kb(oid):
     return InlineKeyboardMarkup([
@@ -205,7 +374,6 @@ def _user_orders(chat_id):
 # ─── Nav helper ───────────────────────────────────────────────────────────────
 
 async def _show(q, text, kb, parse_mode=ParseMode.HTML):
-    """Edit current message (text or caption). Falls back to new message for photos."""
     if q.message.photo or q.message.video:
         await q.message.reply_text(text, reply_markup=kb, parse_mode=parse_mode)
         try:
@@ -219,24 +387,7 @@ async def _show(q, text, kb, parse_mode=ParseMode.HTML):
             await q.message.reply_text(text, reply_markup=kb, parse_mode=parse_mode)
 
 
-# ─── /start ───────────────────────────────────────────────────────────────────
-
-async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    ctx.user_data.setdefault("cart", [])
-    cart = ctx.user_data["cart"]
-    text = (
-        "🍽️ <b>OlimFood</b>ga xush kelibsiz!\n\n"
-        "Mazali taomlarni buyurtma qiling — tez yetkazib beramiz 🚀"
-    )
-    if update.message:
-        await update.message.reply_text(text, reply_markup=main_kb(cart), parse_mode=ParseMode.HTML)
-    else:
-        q = update.callback_query
-        await q.answer()
-        await _show(q, text, main_kb(cart))
-
-
-# ─── Categories ───────────────────────────────────────────────────────────────
+# ─── Bot menu — Categories ────────────────────────────────────────────────────
 
 async def cb_menu(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
@@ -356,15 +507,14 @@ def _cart_text(cart):
 def _cart_kb(cart):
     kb = []
     for it in cart:
-        short = it["name"][:16]
         kb.append([
             InlineKeyboardButton("➖", callback_data=f"dec_{it['product_id']}"),
-            InlineKeyboardButton(f"{short} ×{it['qty']}", callback_data="noop"),
+            InlineKeyboardButton(f"{it['name'][:16]} ×{it['qty']}", callback_data="noop"),
             InlineKeyboardButton("➕", callback_data=f"inc_{it['product_id']}"),
         ])
     kb.append([InlineKeyboardButton("🗑️ Tozalash", callback_data="clear_cart")])
     kb.append([InlineKeyboardButton("✅ Buyurtma berish →", callback_data="checkout")])
-    kb.append([InlineKeyboardButton("🔙 Ortga", callback_data="main_menu")])
+    kb.append([InlineKeyboardButton("🏠 Bosh sahifa", callback_data="main_menu")])
     return InlineKeyboardMarkup(kb)
 
 
@@ -438,8 +588,7 @@ async def got_name(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["o_name"] = update.message.text.strip()
     await update.message.reply_text(
         "📞 Telefon raqamingiz?\n<i>(+998 XX XXX XX XX formatida)</i>",
-        reply_markup=CANCEL_KB,
-        parse_mode=ParseMode.HTML,
+        reply_markup=CANCEL_KB, parse_mode=ParseMode.HTML,
     )
     return ASK_PHONE
 
@@ -492,16 +641,16 @@ async def _ask_payment(msg):
 async def finish_order(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q       = update.callback_query
     await q.answer()
-    payment = q.data[4:]  # naqd / karta / online
-    cart    = ctx.user_data.get("cart", [])
+    payment = q.data[4:]
 
     name    = ctx.user_data.get("o_name", "")
     phone   = ctx.user_data.get("o_phone", "")
     address = ctx.user_data.get("o_address", "")
     note    = ctx.user_data.get("o_note", "")
-
+    cart    = ctx.user_data.get("cart", [])
     subtotal = sum(i["price"] * i["qty"] for i in cart)
-    items    = [
+
+    items = [
         {"product_id": i["product_id"], "name": i["name"],
          "price": i["price"], "qty": i["qty"], "emoji": i.get("emoji", "")}
         for i in cart
@@ -567,15 +716,19 @@ async def finish_order(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 async def cancel_checkout(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     for key in ("o_name", "o_phone", "o_address", "o_note"):
         ctx.user_data.pop(key, None)
-    cart = ctx.user_data.get("cart", [])
-    text = "❌ Buyurtma bekor qilindi."
-    kb   = main_kb(cart)
-    q    = update.callback_query
+    q = update.callback_query
     if q:
         await q.answer()
-        await q.message.reply_text(text, reply_markup=kb)
+        await q.message.reply_text("❌ Buyurtma bekor qilindi.")
     elif update.message:
-        await update.message.reply_text(text, reply_markup=kb)
+        await update.message.reply_text("❌ Buyurtma bekor qilindi.")
+    # Return to main menu
+    ctx.user_data.setdefault("cart", [])
+    await _send_welcome(
+        (update.callback_query.message if update.callback_query else update.message),
+        ctx,
+        edit=False,
+    )
     return ConversationHandler.END
 
 
@@ -587,7 +740,7 @@ async def cb_admin_status(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         await q.answer("Ruxsat yo'q", show_alert=True)
         return
 
-    parts    = q.data.split("_")   # as_confirmed_5  →  ['as','confirmed','5']
+    parts    = q.data.split("_")   # as_confirmed_5 → ['as','confirmed','5']
     status   = parts[1]
     order_id = int(parts[-1])
 
@@ -632,7 +785,10 @@ async def cb_my_orders(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     lines = ["📦 <b>So'nggi buyurtmalarim:</b>\n"]
     for o in orders:
         dt = o["created_at"].strftime("%d.%m %H:%M") if o["created_at"] else ""
-        lines.append(f"<b>#{o['id']}</b>  {STATUS_LABELS.get(o['status'], o['status'])}  |  {fmt(o['total'])} so'm  |  {dt}")
+        lines.append(
+            f"<b>#{o['id']}</b>  {STATUS_LABELS.get(o['status'], o['status'])}  "
+            f"|  {fmt(o['total'])} so'm  |  {dt}"
+        )
     await _show(q, "\n".join(lines), InlineKeyboardMarkup(BACK_HOME))
 
 
@@ -651,6 +807,7 @@ def main():
         print("    .env fayliga qo'shing:")
         print("    BOT_TOKEN=your_token_here")
         print("    ADMIN_CHAT_ID=your_chat_id_here")
+        print("    WEBAPP_URL=https://yourdomain.com")
         print("=" * 50)
         sys.exit(1)
 
@@ -695,25 +852,36 @@ def main():
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(checkout_conv)
 
-    app.add_handler(CallbackQueryHandler(cmd_start,        pattern="^main_menu$"))
-    app.add_handler(CallbackQueryHandler(cb_menu,          pattern="^menu$"))
-    app.add_handler(CallbackQueryHandler(cb_cat,           pattern="^cat_"))
-    app.add_handler(CallbackQueryHandler(cb_prod,          pattern="^prod_"))
-    app.add_handler(CallbackQueryHandler(cb_add,           pattern="^add_"))
-    app.add_handler(CallbackQueryHandler(cb_cart,          pattern="^cart$"))
-    app.add_handler(CallbackQueryHandler(cb_inc,           pattern="^inc_"))
-    app.add_handler(CallbackQueryHandler(cb_dec,           pattern="^dec_"))
-    app.add_handler(CallbackQueryHandler(cb_clear,         pattern="^clear_cart$"))
-    app.add_handler(CallbackQueryHandler(cb_my_orders,     pattern="^my_orders$"))
-    app.add_handler(CallbackQueryHandler(cb_admin_status,  pattern="^as_"))
-    app.add_handler(CallbackQueryHandler(cb_noop,          pattern="^noop$"))
+    # Language
+    app.add_handler(CallbackQueryHandler(cb_lang,        pattern="^lang_"))
+    app.add_handler(CallbackQueryHandler(cb_change_lang, pattern="^change_lang$"))
 
-    print("=" * 50)
+    # Navigation
+    app.add_handler(CallbackQueryHandler(cb_main_menu,   pattern="^main_menu$"))
+    app.add_handler(CallbackQueryHandler(cb_menu,        pattern="^menu$"))
+    app.add_handler(CallbackQueryHandler(cb_cat,         pattern="^cat_"))
+    app.add_handler(CallbackQueryHandler(cb_prod,        pattern="^prod_"))
+    app.add_handler(CallbackQueryHandler(cb_add,         pattern="^add_"))
+    app.add_handler(CallbackQueryHandler(cb_cart,        pattern="^cart$"))
+    app.add_handler(CallbackQueryHandler(cb_inc,         pattern="^inc_"))
+    app.add_handler(CallbackQueryHandler(cb_dec,         pattern="^dec_"))
+    app.add_handler(CallbackQueryHandler(cb_clear,       pattern="^clear_cart$"))
+    app.add_handler(CallbackQueryHandler(cb_my_orders,   pattern="^my_orders$"))
+
+    # Admin
+    app.add_handler(CallbackQueryHandler(cb_admin_status, pattern="^as_"))
+
+    # Misc
+    app.add_handler(CallbackQueryHandler(cb_noop, pattern="^noop$"))
+
+    webapp_status = WEBAPP_URL if WEBAPP_URL else "sozlanmagan (faqat bot menyu)"
+    admin_info    = str(ADMIN_CHAT) if ADMIN_CHAT else "belgilanmagan"
+    print("=" * 55)
     print("🤖  OlimFood Bot ishga tushdi!")
-    admin_info = str(ADMIN_CHAT) if ADMIN_CHAT else "belgilanmagan"
-    print(f"    Admin chat: {admin_info}")
+    print(f"    Web App : {webapp_status}")
+    print(f"    Admin   : {admin_info}")
     print("    Ctrl+C bilan to'xtatish mumkin.")
-    print("=" * 50)
+    print("=" * 55)
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 
 

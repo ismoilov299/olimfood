@@ -53,7 +53,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 BOT_TOKEN  = os.getenv("BOT_TOKEN", "")
-ADMIN_CHAT = int(os.getenv("ADMIN_CHAT_ID", "0"))
+_admin_raw = os.getenv("ADMIN_CHAT_ID", "0")
+ADMIN_CHAT = int(_admin_raw) if _admin_raw.lstrip("-").isdigit() else 0
 WEBAPP_URL = os.getenv("WEBAPP_URL", "").rstrip("/")
 DELIVERY   = 15_000
 
@@ -82,6 +83,16 @@ PAY_LABELS = {"naqd": "💵 Naqd pul", "karta": "💳 Bank kartasi", "online": "
 # ─── i18n ─────────────────────────────────────────────────────────────────────
 _I18N: dict[str, dict[str, str]] = {
     "uz": {
+        "lang_prompt": "🌐 Тилни танланг:",
+        "welcome": (
+            "🍽️ <b>OlimFood</b>га хуш келибсиз!\n\n"
+            "Мазали таомларни буюртма қилинг — тез етказиб берамиз 🚀\n\n"
+            "Қуйидаги тугма орқали иловани очинг 👇"
+        ),
+        "open_app":    "🛒  OlimFood — буюртма бериш",
+        "change_lang": "🌐 Тилни ўзгартириш",
+    },
+    "uzl": {
         "lang_prompt": "🌐 Tilni tanlang:",
         "welcome": (
             "🍽️ <b>OlimFood</b>ga xush kelibsiz!\n\n"
@@ -89,9 +100,6 @@ _I18N: dict[str, dict[str, str]] = {
             "Quyidagi tugma orqali ilovani oching 👇"
         ),
         "open_app":    "🛒  OlimFood — buyurtma berish",
-        "bot_menu":    "🍽️ Bot menyusi",
-        "cart":        "🛒 Savatcha",
-        "my_orders":   "📦 Buyurtmalarim",
         "change_lang": "🌐 Tilni o'zgartirish",
     },
     "ru": {
@@ -102,23 +110,7 @@ _I18N: dict[str, dict[str, str]] = {
             "Нажмите кнопку ниже, чтобы открыть приложение 👇"
         ),
         "open_app":    "🛒  OlimFood — сделать заказ",
-        "bot_menu":    "🍽️ Меню бота",
-        "cart":        "🛒 Корзина",
-        "my_orders":   "📦 Мои заказы",
         "change_lang": "🌐 Сменить язык",
-    },
-    "en": {
-        "lang_prompt": "🌐 Choose language:",
-        "welcome": (
-            "🍽️ Welcome to <b>OlimFood</b>!\n\n"
-            "Order delicious food — delivered fast 🚀\n\n"
-            "Tap the button below to open the app 👇"
-        ),
-        "open_app":    "🛒  OlimFood — place order",
-        "bot_menu":    "🍽️ Bot menu",
-        "cart":        "🛒 Cart",
-        "my_orders":   "📦 My Orders",
-        "change_lang": "🌐 Change language",
     },
 }
 
@@ -135,22 +127,17 @@ fmt = lambda n: f"{int(n):,}".replace(",", " ")
 # ─── Language selection ───────────────────────────────────────────────────────
 
 _LANG_KB = InlineKeyboardMarkup([[
-    InlineKeyboardButton("🇺🇿 O'zbek", callback_data="lang_uz"),
-    InlineKeyboardButton("🇷🇺 Русский", callback_data="lang_ru"),
-    InlineKeyboardButton("🇬🇧 English", callback_data="lang_en"),
+    InlineKeyboardButton("🇺🇿 Ўзбекча",  callback_data="lang_uz"),
+    InlineKeyboardButton("🇺🇿 O'zbekcha", callback_data="lang_uzl"),
+    InlineKeyboardButton("🇷🇺 Русский",   callback_data="lang_ru"),
 ]])
 
-_LANG_PROMPT = "🌐 Tilni tanlang / Выберите язык / Choose language"
+_LANG_PROMPT = "🌐 Тилни танланг / Tilni tanlang / Выберите язык"
 
 
 async def cmd_start(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     """Always show language selection first."""
-    # Remove any existing reply keyboard before showing lang selection
     if update.message:
-        await update.message.reply_text(
-            _LANG_PROMPT,
-            reply_markup=ReplyKeyboardRemove(),
-        )
         await update.message.reply_text(_LANG_PROMPT, reply_markup=_LANG_KB)
     else:
         q = update.callback_query
@@ -197,11 +184,6 @@ def _welcome_kb(lang: str, cart: list) -> tuple[InlineKeyboardMarkup, "ReplyKeyb
             webapp_btn = InlineKeyboardButton(tr(lang, "open_app"), url=url)
         inline_rows.append([webapp_btn])
 
-    inline_rows.append([InlineKeyboardButton(tr(lang, "bot_menu"), callback_data="menu")])
-    inline_rows.append([
-        InlineKeyboardButton(tr(lang, "cart") + cart_badge, callback_data="cart"),
-        InlineKeyboardButton(tr(lang, "my_orders"),         callback_data="my_orders"),
-    ])
     inline_rows.append([InlineKeyboardButton(tr(lang, "change_lang"), callback_data="change_lang")])
 
     inline_kb = InlineKeyboardMarkup(inline_rows)
@@ -876,8 +858,9 @@ def main():
 
     webapp_status = WEBAPP_URL if WEBAPP_URL else "sozlanmagan (faqat bot menyu)"
     admin_info    = str(ADMIN_CHAT) if ADMIN_CHAT else "belgilanmagan"
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace") if hasattr(sys.stdout, "reconfigure") else None
     print("=" * 55)
-    print("🤖  OlimFood Bot ishga tushdi!")
+    print("OlimFood Bot ishga tushdi!")
     print(f"    Web App : {webapp_status}")
     print(f"    Admin   : {admin_info}")
     print("    Ctrl+C bilan to'xtatish mumkin.")

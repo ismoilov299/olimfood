@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { login as apiLogin } from '../../api'
 import useAuthStore from '../../store/authStore'
 import LangSwitcher from '../../components/LangSwitcher'
 
@@ -10,7 +9,7 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('')
   const [loading,  setLoading]  = useState(false)
   const [error,    setError]    = useState('')
-  const { setAuth } = useAuthStore()
+  const { loginAction } = useAuthStore()
   const navigate = useNavigate()
   const { t } = useTranslation()
 
@@ -18,8 +17,7 @@ export default function AdminLogin() {
     e.preventDefault()
     setLoading(true); setError('')
     try {
-      const res = await apiLogin(username, password)
-      setAuth(res.data.access_token, res.data.admin)
+      await loginAction(username, password)
       navigate('/admin/dashboard')
     } catch { setError(t('admin.login.error')) }
     finally { setLoading(false) }

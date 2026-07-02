@@ -1,10 +1,14 @@
 import { useTranslation } from 'react-i18next'
 
-const LANGS = ['uz', 'ru', 'en']
+const LANGS = [
+  { code: 'uz',  label: 'ЎЗ' },
+  { code: 'uzl', label: 'UZ' },
+  { code: 'ru',  label: 'RU' },
+]
 
 export default function LangSwitcher({ style = {} }) {
   const { i18n } = useTranslation()
-  const cur = i18n.language?.slice(0, 2) || 'uz'
+  const cur = i18n.language || 'uz'
 
   return (
     <div style={{
@@ -14,10 +18,10 @@ export default function LangSwitcher({ style = {} }) {
       padding: '3px 4px',
       ...style,
     }}>
-      {LANGS.map(lng => (
+      {LANGS.map(({ code, label }) => (
         <button
-          key={lng}
-          onClick={() => i18n.changeLanguage(lng)}
+          key={code}
+          onClick={() => i18n.changeLanguage(code)}
           style={{
             padding: '4px 9px',
             borderRadius: 16,
@@ -27,12 +31,12 @@ export default function LangSwitcher({ style = {} }) {
             letterSpacing: '.03em',
             cursor: 'pointer',
             transition: 'all .15s',
-            background: cur === lng ? '#E5232B' : 'transparent',
-            color: cur === lng ? '#fff' : 'inherit',
-            opacity: cur === lng ? 1 : 0.5,
+            background: cur === code ? '#E5232B' : 'transparent',
+            color: cur === code ? '#fff' : 'inherit',
+            opacity: cur === code ? 1 : 0.5,
           }}
         >
-          {lng.toUpperCase()}
+          {label}
         </button>
       ))}
     </div>

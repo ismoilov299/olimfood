@@ -3,20 +3,34 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+.env
+.env.*
+.venv/
+venv/
 backend/venv/
 backend/*.db
 backend/uploads/
-*.egg-info/
-.env
-.serena
+*.sqlite3
+*.log
+
+# Serena / editor tools
+.serena/
+.vscode/
+.idea/
+
 # Telegram Bot
 telegram_bot/venv/
 telegram_bot/bot_data.pkl
 
-# Node
+# Node / frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+frontend/.parcel-cache/
+frontend/coverage/
+frontend/.eslintcache
+frontend/.turbo/
 
 # OS
 .DS_Store
@@ -24,7 +38,5 @@ Thumbs.db
 desktop.ini
 
 # IDE
-.vscode/
-.idea/
 *.suo
 *.user

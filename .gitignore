@@ -8,7 +8,7 @@ backend/*.db
 backend/uploads/
 *.egg-info/
 .env
-
+.serena
 # Telegram Bot
 telegram_bot/venv/
 telegram_bot/bot_data.pkl

@@ -11,23 +11,34 @@ class Category(Base):
     __tablename__ = "categories"
 
     id        = Column(Integer, primary_key=True, index=True)
-    name      = Column(String(100), nullable=False)
+    name_uz   = Column(String(150), nullable=False, default="")   # o'zbek kirill
+    name_uzl  = Column(String(150), default="")                   # o'zbek lotin
+    name_ru   = Column(String(150), default="")                   # rus
     emoji     = Column(String(10), default="🍽️")
     image_url = Column(String(500), default="")
     order     = Column(Integer, default=0)
     active    = Column(Boolean, default=True)
+    parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    parent   = relationship("Category", remote_side=[id], back_populates="children")
+    children = relationship("Category", back_populates="parent")
     products = relationship("Product", back_populates="category")
 
 
 class Product(Base):
     __tablename__ = "products"
 
-    id          = Column(Integer, primary_key=True, index=True)
-    name        = Column(String(200), nullable=False)
-    description = Column(Text, default="")
-    weight      = Column(String(50), default="")
+    id              = Column(Integer, primary_key=True, index=True)
+    name_uz         = Column(String(200), nullable=False, default="")
+    name_uzl        = Column(String(200), default="")
+    name_ru         = Column(String(200), default="")
+    description_uz  = Column(Text, default="")
+    description_uzl = Column(Text, default="")
+    description_ru  = Column(Text, default="")
+    weight_uz       = Column(String(50), default="")
+    weight_uzl      = Column(String(50), default="")
+    weight_ru       = Column(String(50), default="")
     price       = Column(Float, nullable=False)
     emoji       = Column(String(10), default="🍽️")
     image_url   = Column(String(500), default="")

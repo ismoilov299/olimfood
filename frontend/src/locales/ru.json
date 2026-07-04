@@ -188,7 +188,10 @@
       "toast_saved": "Сохранено",
       "toast_upload_error": "Ошибка загрузки",
       "toast_name_required": "❌ Введите название",
-      "toast_error": "❌ Ошибка"
+      "toast_error": "❌ Ошибка",
+      "field_parent": "Родительская категория",
+      "parent_none": "— Нет (верхний уровень)",
+      "subcategory_count": "{{count}} подкатегорий"
     },
     "banners": {
       "title": "Баннеры",

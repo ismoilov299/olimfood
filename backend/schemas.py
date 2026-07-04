@@ -15,26 +15,34 @@ class Token(BaseModel):
 
 # ── Category ─────────────────────────────────────
 class CategoryBase(BaseModel):
-    name: str
+    name_uz: str                 # o'zbek kirill — majburiy
+    name_uzl: str = ""           # o'zbek lotin
+    name_ru: str = ""            # rus
     emoji: str = "🍽️"
     image_url: str = ""
     order: int = 0
     active: bool = True
+    parent_id: Optional[int] = None
 
 class CategoryCreate(CategoryBase):
     pass
 
 class CategoryUpdate(BaseModel):
-    name: Optional[str] = None
+    name_uz: Optional[str] = None
+    name_uzl: Optional[str] = None
+    name_ru: Optional[str] = None
     emoji: Optional[str] = None
     image_url: Optional[str] = None
     order: Optional[int] = None
     active: Optional[bool] = None
+    parent_id: Optional[int] = None
 
 class CategoryOut(CategoryBase):
     id: int
     created_at: datetime
     product_count: int = 0
+    children_count: int = 0
+    name: str = ""                # so'ralgan tilda (fallback bilan) hal qilingan nom
 
     class Config:
         from_attributes = True
@@ -42,9 +50,15 @@ class CategoryOut(CategoryBase):
 
 # ── Product ──────────────────────────────────────
 class ProductBase(BaseModel):
-    name: str
-    description: str = ""
-    weight: str = ""
+    name_uz: str
+    name_uzl: str = ""
+    name_ru: str = ""
+    description_uz: str = ""
+    description_uzl: str = ""
+    description_ru: str = ""
+    weight_uz: str = ""
+    weight_uzl: str = ""
+    weight_ru: str = ""
     price: float
     emoji: str = "🍽️"
     image_url: str = ""
@@ -57,9 +71,15 @@ class ProductCreate(ProductBase):
     pass
 
 class ProductUpdate(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
-    weight: Optional[str] = None
+    name_uz: Optional[str] = None
+    name_uzl: Optional[str] = None
+    name_ru: Optional[str] = None
+    description_uz: Optional[str] = None
+    description_uzl: Optional[str] = None
+    description_ru: Optional[str] = None
+    weight_uz: Optional[str] = None
+    weight_uzl: Optional[str] = None
+    weight_ru: Optional[str] = None
     price: Optional[float] = None
     emoji: Optional[str] = None
     image_url: Optional[str] = None
@@ -73,6 +93,9 @@ class ProductOut(ProductBase):
     created_at: datetime
     category_name: Optional[str] = None
     category_emoji: Optional[str] = None
+    name: str = ""                 # so'ralgan tilda hal qilingan nom
+    description: str = ""
+    weight: str = ""
 
     class Config:
         from_attributes = True

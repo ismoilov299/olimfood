@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getCategories, createCategory, updateCategory, deleteCategory, uploadImage, getSetting, setSetting } from '../../api'
+import { buildCategoryTree, excludeSubtree } from '../../utils/categoryTree'
+import LangTabs from './LangTabs'
 
-const EMPTY = { name:'', emoji:'🍽️', image_url:'', order:0, active:true }
+const EMPTY = { name_uz:'', name_uzl:'', name_ru:'', emoji:'🍽️', image_url:'', order:0, active:true, parent_id:null }
 
 export default function Categories() {
   const [cats,       setCats]       = useState([])
@@ -19,11 +21,14 @@ export default function Categories() {
   const allFileRef = useRef(null)
   const { t } = useTranslation()
 
-  const load = () => getCategories().then(r => setCats(r.data))
+  const load = () => getCategories('uz').then(r => setCats(r.data))
   useEffect(() => {
     load()
     getSetting('all_category_image').then(r => setAllImg(r.data.value || '')).catch(() => {})
   }, [])
+
+  const tree = buildCategoryTree(cats)
+  const parentOptions = excludeSubtree(tree, editing?.id)
 
   const saveAllImage = async () => {
     setAllSaving(true)
@@ -42,7 +47,15 @@ export default function Categories() {
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500) }
   const openNew  = () => { setEditing(null); setForm(EMPTY); setModal(true) }
-  const openEdit = (c) => { setEditing(c); setForm({ name:c.name, emoji:c.emoji||'🍽️', image_url:c.image_url||'', order:c.order||0, active:c.active }); setModal(true) }
+  const openEdit = (c) => {
+    setEditing(c)
+    setForm({
+      name_uz: c.name_uz||'', name_uzl: c.name_uzl||'', name_ru: c.name_ru||'',
+      emoji: c.emoji||'🍽️', image_url: c.image_url||'', order: c.order||0,
+      active: c.active, parent_id: c.parent_id ?? null,
+    })
+    setModal(true)
+  }
 
   const handleFile = async (e) => {
     const file = e.target.files[0]; if (!file) return
@@ -53,10 +66,10 @@ export default function Categories() {
   }
 
   const handleSave = async () => {
-    if (!form.name) { showToast(t('admin.categories.toast_name_required')); return }
+    if (!form.name_uz) { showToast(t('admin.categories.toast_name_required')); return }
     setSaving(true)
     try {
-      const data = { ...form, order: parseInt(form.order)||0 }
+      const data = { ...form, order: parseInt(form.order)||0, parent_id: form.parent_id ? parseInt(form.parent_id) : null }
       if (editing) { await updateCategory(editing.id, data) }
       else         { await createCategory(data) }
       showToast(editing ? t('admin.categories.toast_updated') : t('admin.categories.toast_added'))
@@ -111,15 +124,23 @@ export default function Categories() {
         </div>
       </div>
 
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(260px,1fr))', gap:12 }}>
-        {cats.map(c => (
-          <div key={c.id} style={{ background:'#fff', borderRadius:14, border:'1px solid #E8ECF0', padding:'16px 18px', display:'flex', alignItems:'center', gap:12, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        {tree.map(c => (
+          <div key={c.id} style={{ background:'#fff', borderRadius:14, border:'1px solid #E8ECF0', padding:'16px 18px', marginLeft: c.depth*28, display:'flex', alignItems:'center', gap:12, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
+            {c.depth > 0 && <span style={{ color:'#ccc', fontSize:16, flexShrink:0 }}>↳</span>}
             {c.image_url
               ? <img src={c.image_url} style={{ width:48, height:48, borderRadius:12, objectFit:'cover', flexShrink:0 }} />
               : <span style={{ fontSize:32 }}>{c.emoji}</span>
             }
             <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontWeight:800, fontSize:15, color:'#111', marginBottom:2 }}>{c.name}</div>
+              <div style={{ fontWeight:800, fontSize:15, color:'#111', marginBottom:2, display:'flex', alignItems:'center', gap:8 }}>
+                {c.name_uz}
+                {c.children_count > 0 && (
+                  <span style={{ fontSize:10.5, fontWeight:800, color:'#3B82F6', background:'#3B82F612', border:'1px solid #3B82F633', borderRadius:20, padding:'2px 8px' }}>
+                    {t('admin.categories.subcategory_count', { count: c.children_count })}
+                  </span>
+                )}
+              </div>
               <div style={{ fontSize:12, color:'#aaa' }}>{t('admin.categories.product_count', { count: c.product_count })}</div>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
@@ -134,15 +155,24 @@ export default function Categories() {
       {modal && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,.4)', zIndex:500, display:'flex', alignItems:'center', justifyContent:'center', padding:20 }}
           onClick={() => setModal(false)}>
-          <div onClick={e => e.stopPropagation()} style={{ background:'#fff', borderRadius:20, border:'1px solid #E8ECF0', padding:'28px', width:'100%', maxWidth:420, boxShadow:'0 20px 60px rgba(0,0,0,.12)' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:'#fff', borderRadius:20, border:'1px solid #E8ECF0', padding:'28px', width:'100%', maxWidth:420, maxHeight:'90vh', overflowY:'auto', boxShadow:'0 20px 60px rgba(0,0,0,.12)' }}>
             <div style={{ fontWeight:900, fontSize:18, marginBottom:22, color:'#111' }}>
               {editing ? t('admin.categories.modal_edit') : t('admin.categories.modal_new')}
             </div>
+
+            <LangTabs label={t('admin.categories.field_name')} baseKey="name" required
+              form={form} setForm={setForm} placeholder={t('admin.categories.field_name')} />
+
             <div style={{ marginBottom:14 }}>
-              <label style={labelStyle}>{t('admin.categories.field_name')}</label>
-              <input placeholder={t('admin.categories.field_name')} value={form.name}
-                onChange={e => setForm(f => ({ ...f, name:e.target.value }))} style={lightInput} />
+              <label style={labelStyle}>{t('admin.categories.field_parent')}</label>
+              <select value={form.parent_id ?? ''} onChange={e => setForm(f => ({ ...f, parent_id: e.target.value || null }))} style={lightInput}>
+                <option value="">{t('admin.categories.parent_none')}</option>
+                {parentOptions.map(c => (
+                  <option key={c.id} value={c.id}>{'—'.repeat(c.depth)} {c.emoji} {c.name_uz}</option>
+                ))}
+              </select>
             </div>
+
             {/* Image upload */}
             <div style={{ marginBottom:14 }}>
               <label style={labelStyle}>{t('admin.categories.field_image')}</label>

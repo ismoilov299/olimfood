@@ -10,7 +10,7 @@ export const changePassword = (old_password, new_password) =>
 export const getMe = () => api.get('/auth/me')
 
 // ── Categories ─────────────────────────────────────
-export const getCategories = () => api.get('/categories')
+export const getCategories = (lang) => api.get('/categories', { params: { lang } })
 export const createCategory = (data) => api.post('/categories', data)
 export const updateCategory = (id, data) => api.put(`/categories/${id}`, data)
 export const deleteCategory = (id) => api.delete(`/categories/${id}`)

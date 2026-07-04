@@ -1,8 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api'
+import { buildCategoryTree } from '../../utils/categoryTree'
+import LangTabs from './LangTabs'
 
-const EMPTY = { name:'', description:'', weight:'', price:'', image_url:'', cat_id:'', discount:0, available:true, popular:false }
+const EMPTY = {
+  name_uz:'', name_uzl:'', name_ru:'',
+  description_uz:'', description_uzl:'', description_ru:'',
+  weight_uz:'', weight_uzl:'', weight_ru:'',
+  price:'', image_url:'', cat_id:'', discount:0, available:true, popular:false,
+}
 
 export default function Products() {
   const [products,   setProducts]   = useState([])
@@ -20,9 +27,10 @@ export default function Products() {
   const fmt = (n) => n?.toLocaleString() + ' ' + t('common.currency')
   const PER = 12
 
-  const load = () => getProducts({ search: search || undefined }).then(r => setProducts(r.data))
+  const load = () => getProducts({ search: search || undefined, lang:'uz' }).then(r => setProducts(r.data))
+  const catTree = buildCategoryTree(categories)
 
-  useEffect(() => { getCategories().then(r => setCategories(r.data)) }, [])
+  useEffect(() => { getCategories('uz').then(r => setCategories(r.data)) }, [])
   useEffect(() => { load() }, [search])
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500) }
@@ -30,14 +38,18 @@ export default function Products() {
   const openNew = () => { setEditing(null); setForm(EMPTY); setModal(true) }
   const openEdit = (p) => {
     setEditing(p)
-    setForm({ name: p.name, description: p.description||'', weight: p.weight||'',
-              price: p.price, image_url: p.image_url||'', cat_id: p.cat_id,
-              discount: p.discount||0, available: p.available, popular: p.popular })
+    setForm({
+      name_uz: p.name_uz||'', name_uzl: p.name_uzl||'', name_ru: p.name_ru||'',
+      description_uz: p.description_uz||'', description_uzl: p.description_uzl||'', description_ru: p.description_ru||'',
+      weight_uz: p.weight_uz||'', weight_uzl: p.weight_uzl||'', weight_ru: p.weight_ru||'',
+      price: p.price, image_url: p.image_url||'', cat_id: p.cat_id,
+      discount: p.discount||0, available: p.available, popular: p.popular,
+    })
     setModal(true)
   }
 
   const handleSave = async () => {
-    if (!form.name || !form.price || !form.cat_id) { showToast(t('admin.products.toast_required')); return }
+    if (!form.name_uz || !form.price || !form.cat_id) { showToast(t('admin.products.toast_required')); return }
     setSaving(true)
     try {
       const data = { ...form, price: parseFloat(form.price), cat_id: parseInt(form.cat_id), discount: parseInt(form.discount)||0 }
@@ -67,9 +79,8 @@ export default function Products() {
     finally { setUploading(false); e.target.value = '' }
   }
 
-  const filtered  = products.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()))
-  const pages     = Math.ceil(filtered.length / PER)
-  const paginated = filtered.slice((page-1)*PER, page*PER)
+  const pages     = Math.ceil(products.length / PER)
+  const paginated = products.slice((page-1)*PER, page*PER)
 
   return (
     <div>
@@ -159,18 +170,12 @@ export default function Products() {
               {editing ? t('admin.products.modal_edit') : t('admin.products.modal_new')}
             </div>
 
-            {[
-              { key:'name',        label: t('admin.products.field_name'), placeholder: t('admin.products.field_name') },
-              { key:'description', label: t('admin.products.field_desc'), placeholder: t('admin.products.field_desc') },
-              { key:'weight',      label: t('admin.products.field_qty'),  placeholder: '500 g, 2 dona...' },
-            ].map(({ key, label, placeholder }) => (
-              <div key={key} style={{ marginBottom:14 }}>
-                <label style={labelStyle}>{label}</label>
-                <input placeholder={placeholder} value={form[key]}
-                  onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))}
-                  style={lightInput} />
-              </div>
-            ))}
+            <LangTabs label={t('admin.products.field_name')} baseKey="name" required
+              form={form} setForm={setForm} placeholder={t('admin.products.field_name')} />
+            <LangTabs label={t('admin.products.field_desc')} baseKey="description" multiline
+              form={form} setForm={setForm} placeholder={t('admin.products.field_desc')} />
+            <LangTabs label={t('admin.products.field_qty')} baseKey="weight"
+              form={form} setForm={setForm} placeholder="500 g, 2 dona..." />
 
             {/* Image */}
             <div style={{ marginBottom:14 }}>
@@ -227,7 +232,7 @@ export default function Products() {
               <select value={form.cat_id} onChange={e => setForm(f => ({ ...f, cat_id: e.target.value }))}
                 style={{ ...lightInput }}>
                 <option value="">—</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.emoji} {c.name}</option>)}
+                {catTree.map(c => <option key={c.id} value={c.id}>{'—'.repeat(c.depth)} {c.emoji} {c.name_uz}</option>)}
               </select>
             </div>
 

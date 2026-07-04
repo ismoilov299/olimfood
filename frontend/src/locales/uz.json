@@ -188,7 +188,10 @@
       "toast_saved": "Сақланди",
       "toast_upload_error": "Юклаш хатоси",
       "toast_name_required": "❌ Ном киритилмади",
-      "toast_error": "❌ Хатолик"
+      "toast_error": "❌ Хатолик",
+      "field_parent": "Ота категория",
+      "parent_none": "— Йўқ (юқори даража)",
+      "subcategory_count": "{{count}} та суб-категория"
     },
     "banners": {
       "title": "Баннерлар",

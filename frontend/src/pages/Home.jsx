@@ -306,11 +306,41 @@ function CategoryScroll({ categories, active, onSelect, t, allImage }) {
                   : <span style={{ fontSize:24 }}>{c._isAll ? '🍽️' : (c.emoji || '🍴')}</span>
                 }
               </span>
-              <span style={{ fontFamily:MANROPE, fontWeight: isActive ? 700 : 500, fontSize:12, color: isActive ? t.red : t.muted, whiteSpace:'nowrap' }}>{c.name}</span>
+              <span title={c.name} style={{ fontFamily:MANROPE, fontWeight: isActive ? 700 : 500, fontSize:12, color: isActive ? t.red : t.muted, width:64, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', textAlign:'center' }}>{c.name}</span>
             </button>
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// Sub-category chip row — appears under CategoryScroll when the selected
+// top-level category has children (parent/child category tree).
+function SubCategoryRow({ subs, active, onSelect, t }) {
+  const { t: tr } = useTranslation()
+  if (!subs.length) return null
+  return (
+    <div className="scroll-x" style={{ gap:8, padding:'0 20px 12px' }}>
+      <button onClick={() => onSelect(null)}
+        style={{ flexShrink:0, border:'none', cursor:'pointer', borderRadius:'999px', padding:'8px 15px', fontFamily:MANROPE, fontWeight:700, fontSize:12.5,
+          background: active===null ? t.red : t.glassS, color: active===null ? '#fff' : t.muted,
+          backdropFilter: active===null ? 'none' : 'blur(10px) saturate(160%)', WebkitBackdropFilter: active===null ? 'none' : 'blur(10px) saturate(160%)',
+          border: active===null ? 'none' : `1px solid ${t.glassBd}` }}>
+        {tr('home.all_category')}
+      </button>
+      {subs.map(s => {
+        const isActive = active === s.id
+        return (
+          <button key={s.id} onClick={() => onSelect(s.id)}
+            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:6, border:'none', cursor:'pointer', borderRadius:'999px', padding:'8px 15px', fontFamily:MANROPE, fontWeight:700, fontSize:12.5,
+              background: isActive ? t.red : t.glassS, color: isActive ? '#fff' : t.muted,
+              backdropFilter: isActive ? 'none' : 'blur(10px) saturate(160%)', WebkitBackdropFilter: isActive ? 'none' : 'blur(10px) saturate(160%)',
+              border: isActive ? 'none' : `1px solid ${t.glassBd}` }}>
+            <span>{s.emoji}</span>{s.name}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -673,13 +703,14 @@ function Toast({ msg, show }) {
 export default function Home() {
   const [isDark,     setIsDark]    = useState(false)
   const t = THEMES[isDark ? 'dark' : 'light']
-  const { t: tr } = useTranslation()
+  const { t: tr, i18n } = useTranslation()
 
   const [categories, setCats]      = useState([])
   const [products,   setProducts]  = useState([])
   const [banners,    setBanners]   = useState([])
   const [allCatImg,  setAllCatImg] = useState('')
   const [activeCat,  setActiveCat] = useState(null)
+  const [activeSub,  setActiveSub] = useState(null)
   const [search,     setSearch]    = useState('')
   const [detail,     setDetail]    = useState(null)
   const [cartOpen,   setCartOpen]  = useState(false)
@@ -698,18 +729,27 @@ export default function Home() {
   const delivery   = 15000
   const total      = subtotal + delivery
 
+  const topCats = categories.filter(c => !c.parent_id)
+  const subCats = activeCat ? categories.filter(c => c.parent_id === activeCat) : []
+
+  const handleSelectCat = (id) => { setActiveCat(id); setActiveSub(null) }
+
   useEffect(() => {
     getBanners().then(r => setBanners(r.data.filter(b => b.active)))
-    getCategories().then(r => setCats(r.data.filter(c => c.active)))
     getSetting('all_category_image').then(r => setAllCatImg(r.data.value || '')).catch(() => {})
   }, [])
 
   useEffect(() => {
-    const params = { available:true }
-    if (activeCat) params.cat_id = activeCat
+    getCategories(i18n.language).then(r => setCats(r.data.filter(c => c.active)))
+  }, [i18n.language])
+
+  useEffect(() => {
+    const params = { available:true, lang: i18n.language }
+    const catFilter = activeSub || activeCat
+    if (catFilter) params.cat_id = catFilter
     if (search)    params.search  = search
     getProducts(params).then(r => setProducts(r.data))
-  }, [activeCat, search])
+  }, [activeCat, activeSub, search, i18n.language])
 
   const showToast = msg => {
     clearTimeout(toastTimer.current)
@@ -722,7 +762,7 @@ export default function Home() {
     if (b.cta_action === 'url') {
       window.open(b.cta_target, '_blank', 'noopener')
     } else if (b.cta_action === 'category') {
-      setActiveCat(parseInt(b.cta_target))
+      handleSelectCat(parseInt(b.cta_target))
     } else if (b.cta_action === 'product') {
       const p = products.find(x => x.id === parseInt(b.cta_target))
       if (p) setDetail(p)
@@ -808,11 +848,12 @@ export default function Home() {
         <Header t={t} totalItems={totalItems} onCartOpen={() => setCartOpen(true)} isDark={isDark} onToggle={() => setIsDark(d => !d)} />
         <SearchBar t={t} value={search} onChange={setSearch} />
         <BannerCarousel banners={banners} t={t} onCta={handleBannerCta} />
-        <CategoryScroll categories={categories} active={activeCat} onSelect={setActiveCat} t={t} allImage={allCatImg} />
+        <CategoryScroll categories={topCats} active={activeCat} onSelect={handleSelectCat} t={t} allImage={allCatImg} />
+        <SubCategoryRow subs={subCats} active={activeSub} onSelect={setActiveSub} t={t} />
         <div style={{ padding:'12px 20px 20px' }}>
           <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:14 }}>
             <span style={{ fontFamily:SORA, fontWeight:700, fontSize:19, color:t.fg }}>{tr('home.popular_dishes')}</span>
-            <span onClick={() => setActiveCat(null)} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
+            <span onClick={() => handleSelectCat(null)} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
           </div>
           {products.length === 0 && (
             <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontWeight:500, fontSize:14 }}>

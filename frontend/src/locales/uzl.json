@@ -188,7 +188,10 @@
       "toast_saved": "Saqlandi",
       "toast_upload_error": "Yuklash xatosi",
       "toast_name_required": "❌ Nom kiritilmadi",
-      "toast_error": "❌ Xatolik"
+      "toast_error": "❌ Xatolik",
+      "field_parent": "Ota kategoriya",
+      "parent_none": "— Yo'q (yuqori daraja)",
+      "subcategory_count": "{{count}} ta sub-kategoriya"
     },
     "banners": {
       "title": "Bannerlar",

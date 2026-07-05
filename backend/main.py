@@ -44,7 +44,7 @@ seed()
 
 app = FastAPI(
     title="OlimFood API",
-    version="1.0.0",
+    version="1.0.1",
     description="OlimFood food delivery REST API",
 )
 
@@ -75,7 +75,7 @@ app.include_router(settings.router)
 
 @app.get("/")
 def root():
-    return {"status": "ok", "app": "OlimFood API", "version": "1.0.0"}
+    return {"status": "ok", "app": "OlimFood API", "version": "1.0.1"}
 
 
 @app.get("/health")

@@ -161,7 +161,7 @@ function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle }) {
         <IMenu s={22} c={t.fg} />
       </button>
 
-      <img src="/logo-full.jpg" alt="OlimFood" style={{ height:34, borderRadius:9, display:'block' }} />
+      <img src="/logo-oq.png" alt="OlimFood" style={{ height:36, objectFit:'contain', display:'block' }} />
 
       <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
         <button onClick={onFavorites} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
@@ -204,7 +204,7 @@ function BannerSlide({ b, onCta }) {
 
   if (b.mode === 'image' && b.image_url) {
     return (
-      <div style={{ borderRadius:20, overflow:'hidden', position:'relative', background:'#1a1a1a', height:180 }}>
+      <div style={{ overflow:'hidden', position:'relative', background:'#1a1a1a', height:180 }}>
         <img src={b.image_url} alt={b.image_title} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(transparent 30%, rgba(0,0,0,.75))' }} />
         {(b.image_title || b.image_sub) && (
@@ -225,7 +225,7 @@ function BannerSlide({ b, onCta }) {
     ? `radial-gradient(120% 140% at 100% 30%, ${b.grad_from}, ${b.grad_to} 38%, #0d0000)`
     : (BANNER_BG[b.theme] || BANNER_BG.red)
   return (
-    <div style={{ position:'relative', overflow:'hidden', borderRadius:20, padding:'26px 24px', background:bg }}>
+    <div style={{ position:'relative', overflow:'hidden', padding:'26px 24px', background:bg }}>
       <div style={{ position:'absolute', right:-40, bottom:-60, width:220, height:220, borderRadius:'50%', background:'radial-gradient(circle, rgba(255,120,60,.55), rgba(255,60,40,0) 65%)', pointerEvents:'none' }} />
       <div style={{ position:'relative' }}>
         {b.discount > 0 && (
@@ -265,8 +265,8 @@ function BannerCarousel({ banners, t, onCta }) {
 
   if (!banners.length) return null
   return (
-    <div style={{ padding:'10px 20px 4px' }}>
-      <div style={{ overflow:'hidden', borderRadius:20 }}
+    <div style={{ padding:'10px 0 4px' }}>
+      <div style={{ overflow:'hidden' }}
         onTouchStart={e => { touchX.current = e.touches[0].clientX }}
         onTouchEnd={e => {
           if (touchX.current === null) return

@@ -43,7 +43,7 @@ export default function AdminLogin() {
 
       <div style={{ position:'relative', zIndex:1, width:'100%', maxWidth:400 }}>
         <div style={{ textAlign:'center', marginBottom:36 }}>
-          <img src="/logo-full.jpg" alt="OlimFood" style={{ height:70, borderRadius:14, display:'inline-block', marginBottom:10 }} />
+          <img src="/logo-oq.png" alt="OlimFood" style={{ height:70, objectFit:'contain', display:'inline-block', marginBottom:10 }} />
           <div style={{ fontSize:12, color:'#bbb', marginTop:4, fontWeight:600, letterSpacing:.8 }}>{t('admin.login.panel_label')}</div>
         </div>
 

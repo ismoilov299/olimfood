@@ -64,8 +64,12 @@ backend/venv/bin/pip install --quiet --disable-pip-version-check -r backend/requ
 echo "==> Installing telegram bot dependencies"
 telegram_bot/venv/bin/pip install --quiet --disable-pip-version-check -r telegram_bot/requirements.txt
 
-echo "==> Building frontend"
-( cd frontend && npm ci && npm run build )
+if [ -n "${SKIP_FRONTEND_BUILD:-}" ]; then
+  echo "==> Skipping frontend build (prebuilt dist delivered by CI)"
+else
+  echo "==> Building frontend"
+  ( cd frontend && npm ci && npm run build )
+fi
 
 echo "==> Restarting application services (cf-tunnel left untouched)"
 systemctl restart olimfood-backend olimfood-bot

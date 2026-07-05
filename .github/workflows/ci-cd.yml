@@ -56,6 +56,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 3
+
   deploy:
     name: Deploy to production
     needs: [backend, frontend]
@@ -65,6 +72,12 @@ jobs:
       group: deploy-production
       cancel-in-progress: false
     steps:
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+
       - name: Deploy over SSH
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -78,6 +91,15 @@ jobs:
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
           printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new \
-              "$DEPLOY_USER@$DEPLOY_HOST" \
-              'cd /opt/olimfood && git fetch --prune origin master && bash <(git show origin/master:scripts/deploy.sh)'
+          SSH="ssh -i $HOME/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          SCP="scp -i $HOME/.ssh/id_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          TARGET="$DEPLOY_USER@$DEPLOY_HOST"
+
+          # 1. Update code + backend/bot on the server (frontend build skipped —
+          #    it was built in CI and is shipped below).
+          $SSH "$TARGET" 'cd /opt/olimfood && git fetch --prune origin master && SKIP_FRONTEND_BUILD=1 bash <(git show origin/master:scripts/deploy.sh)'
+
+          # 2. Ship the prebuilt frontend and swap it in atomically.
+          tar czf dist.tgz -C dist .
+          $SCP dist.tgz "$TARGET:/tmp/olimfood-dist.tgz"
+          $SSH "$TARGET" 'set -e; rm -rf /opt/olimfood/frontend/dist.new && mkdir -p /opt/olimfood/frontend/dist.new && tar xzf /tmp/olimfood-dist.tgz -C /opt/olimfood/frontend/dist.new && rm -rf /opt/olimfood/frontend/dist && mv /opt/olimfood/frontend/dist.new /opt/olimfood/frontend/dist && rm -f /tmp/olimfood-dist.tgz && echo "frontend dist updated ($(ls /opt/olimfood/frontend/dist | wc -l) entries)"'

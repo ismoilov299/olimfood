@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api'
 import { buildCategoryTree } from '../../utils/categoryTree'
 import LangTabs from './LangTabs'
@@ -12,9 +13,11 @@ const EMPTY = {
 }
 
 export default function Products() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [products,   setProducts]   = useState([])
   const [categories, setCategories] = useState([])
   const [search,     setSearch]     = useState('')
+  const [catFilter,  setCatFilter]  = useState(searchParams.get('cat_id') || '')
   const [page,       setPage]       = useState(1)
   const [modal,      setModal]      = useState(false)
   const [editing,    setEditing]    = useState(null)
@@ -27,11 +30,19 @@ export default function Products() {
   const fmt = (n) => n?.toLocaleString() + ' ' + t('common.currency')
   const PER = 12
 
-  const load = () => getProducts({ search: search || undefined, lang:'uz' }).then(r => setProducts(r.data))
+  const load = () => getProducts({ search: search || undefined, cat_id: catFilter || undefined, lang:'uz' }).then(r => setProducts(r.data))
   const catTree = buildCategoryTree(categories)
+  const catFilterObj = categories.find(c => String(c.id) === String(catFilter))
 
   useEffect(() => { getCategories('uz').then(r => setCategories(r.data)) }, [])
-  useEffect(() => { load() }, [search])
+  useEffect(() => { load() }, [search, catFilter])
+
+  const handleCatFilterChange = (value) => {
+    setCatFilter(value); setPage(1)
+    const next = new URLSearchParams(searchParams)
+    if (value) next.set('cat_id', value); else next.delete('cat_id')
+    setSearchParams(next, { replace: true })
+  }
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 2500) }
 
@@ -91,9 +102,25 @@ export default function Products() {
         <button onClick={openNew} style={redBtn}>{t('admin.products.new_btn')}</button>
       </div>
 
-      <input placeholder={t('admin.products.search_placeholder')} value={search}
-        onChange={e => { setSearch(e.target.value); setPage(1) }}
-        style={{ ...lightInput, marginBottom:16, borderRadius:12 }} />
+      <div style={{ display:'flex', gap:10, marginBottom:16 }}>
+        <input placeholder={t('admin.products.search_placeholder')} value={search}
+          onChange={e => { setSearch(e.target.value); setPage(1) }}
+          style={{ ...lightInput, borderRadius:12, flex:2 }} />
+        <select value={catFilter} onChange={e => handleCatFilterChange(e.target.value)}
+          style={{ ...lightInput, borderRadius:12, flex:1 }}>
+          <option value="">{t('admin.products.filter_all_categories')}</option>
+          {catTree.map(c => <option key={c.id} value={c.id}>{'—'.repeat(c.depth)} {c.emoji} {c.name_uz}</option>)}
+        </select>
+      </div>
+
+      {catFilterObj && (
+        <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:16 }}>
+          <span style={{ display:'inline-flex', alignItems:'center', gap:6, background:'rgba(227,30,36,.08)', color:'#E31E24', borderRadius:20, padding:'6px 12px', fontSize:12.5, fontWeight:700 }}>
+            {t('admin.products.filtered_by', { name: catFilterObj.name_uz })}
+            <button onClick={() => handleCatFilterChange('')} style={{ background:'none', border:'none', color:'#E31E24', cursor:'pointer', fontWeight:900, fontSize:13, padding:0, lineHeight:1 }}>✕</button>
+          </span>
+        </div>
+      )}
 
       <div style={{ background:'#fff', borderRadius:16, border:'1px solid #E8ECF0', overflowX:'auto', boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
         <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13.5 }}>

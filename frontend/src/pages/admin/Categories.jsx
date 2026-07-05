@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 import { getCategories, createCategory, updateCategory, deleteCategory, uploadImage, getSetting, setSetting } from '../../api'
 import { buildCategoryTree, excludeSubtree } from '../../utils/categoryTree'
 import LangTabs from './LangTabs'
@@ -20,6 +21,7 @@ export default function Categories() {
   const fileRef    = useRef(null)
   const allFileRef = useRef(null)
   const { t } = useTranslation()
+  const navigate = useNavigate()
 
   const load = () => getCategories('uz').then(r => setCats(r.data))
   useEffect(() => {
@@ -141,10 +143,14 @@ export default function Categories() {
                   </span>
                 )}
               </div>
-              <div style={{ fontSize:12, color:'#aaa' }}>{t('admin.categories.product_count', { count: c.product_count })}</div>
+              <div onClick={() => navigate(`/admin/products?cat_id=${c.id}`)}
+                style={{ fontSize:12, color:'#3B82F6', fontWeight:600, cursor:'pointer', textDecoration:'underline', textUnderlineOffset:2, width:'fit-content' }}>
+                {t('admin.categories.product_count', { count: c.product_count })}
+              </div>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:8 }}>
               <ToggleBtn value={c.active} onChange={() => handleToggle(c)} />
+              <button onClick={() => navigate(`/admin/products?cat_id=${c.id}`)} style={actBtn('#8B5CF6')} title={t('admin.categories.view_products')}>👁️</button>
               <button onClick={() => openEdit(c)} style={actBtn('#3B82F6')}>✏️</button>
               <button onClick={() => handleDelete(c.id)} style={actBtn('#EF4444')}>🗑️</button>
             </div>

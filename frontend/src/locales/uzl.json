@@ -170,7 +170,9 @@
       "toast_img_error": "❌ Rasm yuklashda xatolik",
       "toast_img_ok": "✅ Rasm yuklandi",
       "toast_required": "❌ Ism, narx va kategoriya majburiy",
-      "toast_error": "❌ Xatolik"
+      "toast_error": "❌ Xatolik",
+      "filter_all_categories": "Barcha kategoriyalar",
+      "filtered_by": "Filtr: {{name}}"
     },
     "categories": {
       "title": "Kategoriyalar",
@@ -194,7 +196,8 @@
       "toast_error": "❌ Xatolik",
       "field_parent": "Ota kategoriya",
       "parent_none": "— Yo'q (yuqori daraja)",
-      "subcategory_count": "{{count}} ta sub-kategoriya"
+      "subcategory_count": "{{count}} ta sub-kategoriya",
+      "view_products": "Mahsulotlarni ko'rish"
     },
     "banners": {
       "title": "Bannerlar",

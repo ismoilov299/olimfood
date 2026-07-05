@@ -170,7 +170,9 @@
       "toast_img_error": "❌ Расм юклашда хатолик",
       "toast_img_ok": "✅ Расм юкланди",
       "toast_required": "❌ Исм, нарх ва категория мажбурий",
-      "toast_error": "❌ Хатолик"
+      "toast_error": "❌ Хатолик",
+      "filter_all_categories": "Барча категориялар",
+      "filtered_by": "Филтр: {{name}}"
     },
     "categories": {
       "title": "Категориялар",
@@ -194,7 +196,8 @@
       "toast_error": "❌ Хатолик",
       "field_parent": "Ота категория",
       "parent_none": "— Йўқ (юқори даража)",
-      "subcategory_count": "{{count}} та суб-категория"
+      "subcategory_count": "{{count}} та суб-категория",
+      "view_products": "Маҳсулотларни кўриш"
     },
     "banners": {
       "title": "Баннерлар",

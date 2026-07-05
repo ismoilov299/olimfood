@@ -18,13 +18,21 @@ Pipeline: [`.github/workflows/ci-cd.yml`](../.github/workflows/ci-cd.yml)
 
 ```
 git fetch --prune origin master && git reset --hard origin/master   # (in the workflow)
-scripts/deploy.sh:
+scripts/deploy.sh (SKIP_FRONTEND_BUILD=1 from CI):
   backend/venv       pip install -r backend/requirements.txt
   telegram_bot/venv  pip install -r telegram_bot/requirements.txt
-  frontend           npm ci && npm run build         # nginx serves frontend/dist
-  systemctl restart olimfood-backend olimfood-bot
-  systemctl reload nginx
+  systemctl restart olimfood-backend olimfood-bot ; systemctl reload nginx
+then the deploy job ships the CI-built frontend dist and swaps it in atomically.
 ```
+
+The frontend is **built in the CI `frontend` job** (uploaded as the `frontend-dist`
+artifact) and shipped to the server — the 1 GB VPS never runs `npm build`. A manual
+`bash scripts/deploy.sh` run (without `SKIP_FRONTEND_BUILD`) still builds on the box
+as a fallback.
+
+Server ops (configured on the box, outside git): 2 GB swap, daily SQLite backup at
+03:00 → `/opt/backups` (7 kept), `ufw` (22/80/443 only), `fail2ban` (sshd), and
+uvicorn bound to `127.0.0.1:8000` (reachable only through nginx).
 
 Left untouched by design:
 

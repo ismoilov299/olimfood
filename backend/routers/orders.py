@@ -1,4 +1,5 @@
 import os
+from html import escape
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.orm import Session
@@ -19,20 +20,94 @@ _NOTIFY_MSGS = {
     "cancelled":  "❌ Buyurtmangiz #{id} bekor qilindi.",
 }
 
+# Kept in sync with the bot's own order flow (telegram_bot/bot.py) so an order
+# placed from the Mini App is announced exactly like a bot-placed one.
+_PAY_LABELS = {"naqd": "💵 Naqd pul", "karta": "💳 Bank kartasi", "online": "📱 Online"}
 
-def _tg_notify(chat_id: str, order_id: int, status: str) -> None:
+_h   = lambda s: escape(str(s or ""))
+_fmt = lambda n: f"{int(n):,}".replace(",", " ")
+
+
+def _tg_send(chat_id, text: str, reply_markup: dict | None = None) -> None:
+    """Fire-and-forget Telegram sendMessage (HTML). Never raises."""
     token = os.getenv("BOT_TOKEN", "")
-    msg   = _NOTIFY_MSGS.get(status, "").replace("{id}", str(order_id))
-    if not token or not chat_id or not msg:
+    if not token or not chat_id or not text:
         return
+    payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
     try:
         httpx.post(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            json={"chat_id": chat_id, "text": msg},
+            json=payload,
             timeout=5.0,
         )
     except Exception:
         pass
+
+
+def _tg_notify(chat_id: str, order_id: int, status: str) -> None:
+    _tg_send(chat_id, _NOTIFY_MSGS.get(status, "").replace("{id}", str(order_id)))
+
+
+def _admin_kb(oid: int) -> dict:
+    """Status-change buttons handled by the running bot's `^as_` callback."""
+    return {"inline_keyboard": [
+        [
+            {"text": "✅ Tasdiqlash",      "callback_data": f"as_confirmed_{oid}"},
+            {"text": "👨‍🍳 Tayyorlanmoqda", "callback_data": f"as_preparing_{oid}"},
+        ],
+        [
+            {"text": "🚗 Yetkazilmoqda",  "callback_data": f"as_delivering_{oid}"},
+            {"text": "🟢 Yetkazildi",     "callback_data": f"as_delivered_{oid}"},
+        ],
+        [{"text": "❌ Bekor qilish",       "callback_data": f"as_cancelled_{oid}"}],
+    ]}
+
+
+def _notify_new_order(order: models.Order) -> None:
+    """Announce a Mini App / web order: confirm to the customer and alert admins.
+
+    Bot-placed orders write straight to the DB (not this endpoint), so this never
+    double-fires for them.
+    """
+    pay_disp = _PAY_LABELS.get(order.payment, order.payment)
+
+    # 1. Customer confirmation (only Telegram users carry a chat id).
+    if order.telegram_chat_id:
+        _tg_send(
+            order.telegram_chat_id,
+            f"🎉 <b>Buyurtma qabul qilindi!</b>\n\n"
+            f"📦 Buyurtma <b>#{order.id}</b>\n"
+            f"💰 Jami: <b>{_fmt(order.total)} so'm</b>\n"
+            f"💳 To'lov: {pay_disp}\n\n"
+            f"Yetkazib berish taxminan <b>30–45 daqiqa</b> ichida.\n"
+            f"Status o'zgarishini Telegram orqali bilasiz 👇",
+        )
+
+    # 2. Admin group alert with actionable status buttons.
+    admin_raw = os.getenv("ADMIN_CHAT_ID", "0")
+    if not admin_raw.lstrip("-").isdigit() or int(admin_raw) == 0:
+        return
+    items_lines = "\n".join(
+        f"  {it.get('emoji','')}{' ' if it.get('emoji') else ''}"
+        f"{_h(it.get('name',''))} × {it.get('qty',0)} = "
+        f"{_fmt(it.get('price',0) * it.get('qty',0))} so'm"
+        for it in (order.items or [])
+    )
+    note_line = f"💬 {_h(order.note)}\n" if order.note else ""
+    admin_txt = (
+        f"🆕 <b>YANGI BUYURTMA #{order.id}</b>\n\n"
+        f"👤 <b>{_h(order.name)}</b>\n"
+        f"📞 {_h(order.phone)}\n"
+        f"📍 {_h(order.address)}\n"
+        f"{note_line}"
+        f"💳 {pay_disp}\n\n"
+        f"<b>Mahsulotlar:</b>\n{items_lines}\n\n"
+        f"📦 Yetkazish: {_fmt(order.delivery)} so'm\n"
+        f"💰 <b>Jami: {_fmt(order.total)} so'm</b>"
+    )
+    _tg_send(int(admin_raw), admin_txt, reply_markup=_admin_kb(order.id))
 
 
 @router.get("", response_model=List[schemas.OrderOut])
@@ -76,7 +151,11 @@ def get_order(
 
 
 @router.post("", response_model=schemas.OrderOut)
-def create_order(data: schemas.OrderCreate, db: Session = Depends(get_db)):
+def create_order(
+    data: schemas.OrderCreate,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     order = models.Order(
         name=data.name,
         phone=data.phone,
@@ -93,6 +172,7 @@ def create_order(data: schemas.OrderCreate, db: Session = Depends(get_db)):
     db.add(order)
     db.commit()
     db.refresh(order)
+    background_tasks.add_task(_notify_new_order, order)
     return order
 
 

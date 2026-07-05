@@ -40,7 +40,27 @@ Left untouched by design:
   every restart and would break the bot's `WEBAPP_URL`. Never restarted by deploy.
 - **`.env`** — untracked; holds `BOT_TOKEN` / `WEBAPP_URL`. Never modified.
 
-## Database (`backend/olimfood.db`)
+## Database migrations (Alembic)
+
+Schema changes are managed by **Alembic** (`backend/alembic/`), not by runtime
+`create_all`. Deploys run `alembic upgrade head` automatically before restarting.
+
+Typical workflow after editing `backend/models.py`:
+
+```bash
+cd backend
+venv/bin/alembic revision --autogenerate -m "describe change"   # generate
+venv/bin/alembic upgrade head                                   # apply locally
+git add alembic/versions/*.py && git commit && git push          # ship it
+```
+
+- Fresh DBs are created by `alembic upgrade head`.
+- The pre-existing production DB (created before Alembic) is auto-stamped to
+  `head` on the first migrated deploy, then upgraded normally afterwards.
+- `render_as_batch=True` is enabled so column changes work on SQLite.
+- CI runs `alembic upgrade head` on a throwaway DB to validate every migration.
+
+## Database file (`backend/olimfood.db`)
 
 The SQLite DB is **normally preserved** across deploys, so orders and admin edits
 made on the server are never lost by a code-only deploy.

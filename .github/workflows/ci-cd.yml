@@ -27,6 +27,10 @@ jobs:
       - name: Byte-compile all sources
         run: python -m compileall -q backend telegram_bot
 
+      - name: Apply migrations on a fresh DB (validates Alembic)
+        working-directory: backend
+        run: python -m alembic -c alembic.ini upgrade head
+
       - name: App import smoke test
         working-directory: backend
         run: python -c "import main; print('FastAPI app OK:', main.app.title)"

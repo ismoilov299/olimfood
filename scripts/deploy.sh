@@ -64,6 +64,24 @@ backend/venv/bin/pip install --quiet --disable-pip-version-check -r backend/requ
 echo "==> Installing telegram bot dependencies"
 telegram_bot/venv/bin/pip install --quiet --disable-pip-version-check -r telegram_bot/requirements.txt
 
+echo "==> Applying database migrations (Alembic)"
+(
+  cd backend
+  ALEMBIC="venv/bin/alembic -c alembic.ini"
+  # First-time bootstrap: an existing pre-Alembic DB already has the tables but
+  # no alembic_version. Stamp it to the baseline so 'upgrade' won't try to
+  # re-create existing tables. A brand-new/empty DB skips this and gets created
+  # by 'upgrade head' below.
+  if [ -f olimfood.db ] \
+     && ! sqlite3 olimfood.db "SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version';" | grep -q alembic_version \
+     && sqlite3 olimfood.db "SELECT name FROM sqlite_master WHERE type='table' AND name='categories';" | grep -q categories; then
+    echo "    existing pre-Alembic DB detected -> stamping to head (schema already matches)"
+    $ALEMBIC stamp head
+  fi
+  $ALEMBIC upgrade head
+  echo "    now at: $($ALEMBIC current 2>/dev/null | tail -1)"
+)
+
 if [ -n "${SKIP_FRONTEND_BUILD:-}" ]; then
   echo "==> Skipping frontend build (prebuilt dist delivered by CI)"
 else

@@ -18,14 +18,15 @@ backend/uploads/
 .serena/
 .vscode/
 .idea/
+.claude/
 
 # Telegram Bot
 telegram_bot/venv/
 telegram_bot/bot_data.pkl
 
 # Node / frontend
-frontend/node_modules/
-frontend/dist/
+node_modules/
+dist/
 frontend/.vite/
 frontend/.parcel-cache/
 frontend/coverage/
@@ -40,3 +41,6 @@ desktop.ini
 # IDE
 *.suo
 *.user
+
+# Docs / misc
+*.pdf

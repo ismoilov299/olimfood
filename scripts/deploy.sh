@@ -72,7 +72,17 @@ systemctl restart olimfood-backend olimfood-bot
 systemctl reload nginx
 
 echo "==> Verifying health"
-sleep 2
 systemctl is-active olimfood-backend olimfood-bot
-curl -fsS http://127.0.0.1:8000/health && echo
+for i in $(seq 1 15); do
+  if curl -fsS http://127.0.0.1:8000/health >/dev/null 2>&1; then
+    echo "    backend healthy after ${i}s: $(curl -fsS http://127.0.0.1:8000/)"
+    break
+  fi
+  if [ "$i" -eq 15 ]; then
+    echo "    ERROR: backend did not become healthy within 15s" >&2
+    journalctl -u olimfood-backend -n 30 --no-pager >&2 || true
+    exit 1
+  fi
+  sleep 1
+done
 echo "==> Deploy complete: now at $(git rev-parse --short HEAD)"

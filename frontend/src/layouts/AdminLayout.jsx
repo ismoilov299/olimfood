@@ -52,9 +52,8 @@ export default function AdminLayout() {
       }}>
         {/* Logo */}
         <div style={{ padding:'26px 22px 18px', borderBottom:'1px solid rgba(20,16,14,0.07)' }}>
-          <div style={{ fontFamily:SORA, fontSize:24, fontWeight:800, letterSpacing:'-.01em', lineHeight:1, userSelect:'none' }}>
-            <span style={{ color:'#E5232B' }}>OLIM</span>
-            <span style={{ color:'#1A1513' }}>FOOD</span>
+          <div style={{ display:'flex', alignItems:'center', userSelect:'none' }}>
+            <img src="/logo-full.jpg" alt="OlimFood" style={{ height:34, borderRadius:8, display:'block' }} />
           </div>
           <div style={{ fontFamily:MANROPE, fontSize:10, color:'#8B827B', marginTop:5, fontWeight:800, letterSpacing:'.1em' }}>ADMIN PANEL</div>
           <div style={{ marginTop:10 }}>

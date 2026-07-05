@@ -30,8 +30,6 @@
     "ru": "RU"
   },
   "home": {
-    "search_placeholder": "Mahsulot qidirish...",
-    "categories_label": "KATEGORIYALAR",
     "all_category": "Barchasi",
     "popular_dishes": "Mashhur taomlar",
     "view_all": "Barchasi",
@@ -47,7 +45,9 @@
     "size_large": "Katta",
     "discount": "chegirma",
     "product_image": "MAHSULOT RASMI",
-    "dish": "Taom"
+    "dish": "Taom",
+    "categories_label_title": "Kategoriyalar",
+    "favorites_empty": "Hali sevimli mahsulot yo'q"
   },
   "cart": {
     "title": "Savatcha",
@@ -90,7 +90,10 @@
   },
   "nav": {
     "home": "Asosiy",
-    "profile": "Profil"
+    "profile": "Profil",
+    "catalog": "Katalog",
+    "favorites": "Sevimli",
+    "cart": "Savatcha"
   },
   "admin": {
     "login": {
@@ -295,5 +298,16 @@
       "success_changed": "Parol muvaffaqiyatli o'zgartirildi",
       "error_generic": "Xatolik yuz berdi"
     }
+  },
+  "profile": {
+    "guest": "Mehmon",
+    "orders_title": "Buyurtmalar tarixi",
+    "no_telegram": "Buyurtmalar tarixini ko'rish uchun ilovani Telegram orqali oching",
+    "no_orders": "Hali buyurtma bermagansiz",
+    "items_count": "{{count}} ta mahsulot"
+  },
+  "header": {
+    "dark_mode": "Tungi rejim",
+    "light_mode": "Kunduzgi rejim"
   }
 }

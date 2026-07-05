@@ -47,6 +47,22 @@ def get_orders(
     return q.order_by(models.Order.created_at.desc()).all()
 
 
+@router.get("/my", response_model=List[schemas.OrderOut])
+def get_my_orders(
+    telegram_chat_id: str = Query(...),
+    db: Session = Depends(get_db),
+):
+    """Public endpoint: a Telegram Mini App user's own order history."""
+    if not telegram_chat_id:
+        return []
+    return (
+        db.query(models.Order)
+        .filter(models.Order.telegram_chat_id == telegram_chat_id)
+        .order_by(models.Order.created_at.desc())
+        .all()
+    )
+
+
 @router.get("/{order_id}", response_model=schemas.OrderOut)
 def get_order(
     order_id: int,

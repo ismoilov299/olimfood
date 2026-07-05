@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getCategories, getProducts, getBanners, createOrder, getSetting } from '../api'
+import { getCategories, getProducts, getBanners, createOrder, getSetting, getMyOrders } from '../api'
 import useCartStore from '../store/cartStore'
 import LangSwitcher from '../components/LangSwitcher'
 
@@ -52,19 +52,27 @@ const ICart = ({ s=21, c='currentColor' }) => (
     <path d="M2.5 3h2.2l2.2 12.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21.5 7H6"/>
   </svg>
 )
-const ISearch = ({ s=19, c='currentColor' }) => (
-  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round">
-    <circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>
-  </svg>
-)
 const IHome = ({ s=23, c='currentColor' }) => (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinejoin="round">
     <path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/>
   </svg>
 )
+const IMenu = ({ s=23, c='currentColor' }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round">
+    <line x1="3.5" y1="6.5" x2="20.5" y2="6.5"/><line x1="3.5" y1="12" x2="20.5" y2="12"/><line x1="3.5" y1="17.5" x2="20.5" y2="17.5"/>
+  </svg>
+)
 const IBox = ({ s=23, c='currentColor' }) => (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinejoin="round">
     <path d="M3 8 12 3l9 5v8l-9 5-9-5Z"/><path d="m3 8 9 5 9-5M12 13v8"/>
+  </svg>
+)
+const IGrid = ({ s=23, c='currentColor' }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinejoin="round">
+    <rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.6"/>
+    <rect x="13" y="3.5" width="7.5" height="7.5" rx="1.6"/>
+    <rect x="3.5" y="13" width="7.5" height="7.5" rx="1.6"/>
+    <rect x="13" y="13" width="7.5" height="7.5" rx="1.6"/>
   </svg>
 )
 const IPerson = ({ s=23, c='currentColor' }) => (
@@ -144,44 +152,40 @@ function Blobs({ t }) {
 }
 
 // ─── Header ───────────────────────────────────────────────────────────────────
-function Header({ t, totalItems, onCartOpen, isDark, onToggle }) {
+function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle }) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const { t: tr } = useTranslation()
   return (
-    <header style={{ background:t.glass, backdropFilter:'blur(22px) saturate(180%)', WebkitBackdropFilter:'blur(22px) saturate(180%)', padding:'16px 20px 13px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:`1px solid ${t.glassBd}`, position:'sticky', top:0, zIndex:20 }}>
-      <div style={{ fontFamily:SORA, fontSize:26, fontWeight:800, letterSpacing:'-.01em', lineHeight:1, userSelect:'none' }}>
-        <span style={{ color:t.red }}>OLIM</span>
-        <span style={{ color:t.fg }}>FOOD</span>
-      </div>
-      <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-        <LangSwitcher style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', color: t.fg }} />
-        <button onClick={onToggle} style={{ width:40, height:40, borderRadius:12, border:`1px solid ${t.glassBd}`, background:t.glassS, backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
-          {isDark ? <ISun s={16} c={t.muted} /> : <IMoon s={16} c={t.muted} />}
+    <header style={{ position:'sticky', top:0, zIndex:20, background:t.glass, backdropFilter:'blur(22px) saturate(180%)', WebkitBackdropFilter:'blur(22px) saturate(180%)', padding:'16px 20px 13px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:`1px solid ${t.glassBd}` }}>
+      <button onClick={() => setMenuOpen(v => !v)} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', flexShrink:0 }}>
+        <IMenu s={22} c={t.fg} />
+      </button>
+
+      <img src="/logo-full.jpg" alt="OlimFood" style={{ height:34, borderRadius:9, display:'block' }} />
+
+      <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
+        <button onClick={onFavorites} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+          <IHeart s={20} c={t.fg} />
         </button>
-        <button onClick={onCartOpen} style={{ position:'relative', width:46, height:46, borderRadius:16, border:`1px solid ${t.glassBd}`, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', boxShadow:t.shadow, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+        <button onClick={onCartOpen} style={{ position:'relative', width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           <ICart s={21} c={t.fg} />
           {totalItems > 0 && (
-            <span style={{ position:'absolute', top:-5, right:-5, minWidth:19, height:19, padding:'0 5px', background:t.red, color:'#fff', borderRadius:'999px', fontFamily:MANROPE, fontSize:11, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', border:`2px solid ${t.surface}` }}>{totalItems}</span>
+            <span style={{ position:'absolute', top:1, right:1, minWidth:17, height:17, padding:'0 4px', background:t.red, color:'#fff', borderRadius:'999px', fontFamily:MANROPE, fontSize:10, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', border:`2px solid ${t.surface}` }}>{totalItems}</span>
           )}
         </button>
       </div>
-    </header>
-  )
-}
 
-// ─── SearchBar ────────────────────────────────────────────────────────────────
-function SearchBar({ t, value, onChange }) {
-  const { t: tr } = useTranslation()
-  return (
-    <div style={{ padding:'8px 20px 6px' }}>
-      <div style={{ display:'flex', alignItems:'center', gap:11, background:t.glassS, backdropFilter:'blur(18px) saturate(170%)', WebkitBackdropFilter:'blur(18px) saturate(170%)', border:`1px solid ${t.glassBd}`, borderRadius:18, padding:'14px 16px', boxShadow:t.shadow }}>
-        <ISearch s={19} c={t.muted} />
-        <input
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          placeholder={tr('home.search_placeholder')}
-          style={{ flex:1, border:'none', outline:'none', background:'transparent', fontFamily:MANROPE, fontWeight:500, fontSize:15, color:t.fg }}
-        />
-      </div>
-    </div>
+      {menuOpen && <div onClick={() => setMenuOpen(false)} style={{ position:'fixed', inset:0, zIndex:99 }} />}
+      {menuOpen && (
+        <div style={{ position:'absolute', top:'100%', left:16, marginTop:8, background:t.surface, border:`1px solid ${t.line}`, borderRadius:16, padding:14, boxShadow:t.shadow, zIndex:100, display:'flex', flexDirection:'column', gap:10, minWidth:180 }}>
+          <LangSwitcher style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', color: t.fg }} />
+          <button onClick={onToggle} style={{ display:'flex', alignItems:'center', gap:8, padding:'9px 11px', borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', color:t.fg, fontFamily:MANROPE, fontSize:13, fontWeight:600 }}>
+            {isDark ? <ISun s={16} c={t.muted} /> : <IMoon s={16} c={t.muted} />}
+            {isDark ? tr('header.light_mode') : tr('header.dark_mode')}
+          </button>
+        </div>
+      )}
+    </header>
   )
 }
 
@@ -200,7 +204,7 @@ function BannerSlide({ b, onCta }) {
 
   if (b.mode === 'image' && b.image_url) {
     return (
-      <div style={{ borderRadius:24, overflow:'hidden', position:'relative', background:'#1a1a1a', height:180 }}>
+      <div style={{ borderRadius:20, overflow:'hidden', position:'relative', background:'#1a1a1a', height:180 }}>
         <img src={b.image_url} alt={b.image_title} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(transparent 30%, rgba(0,0,0,.75))' }} />
         {(b.image_title || b.image_sub) && (
@@ -221,7 +225,7 @@ function BannerSlide({ b, onCta }) {
     ? `radial-gradient(120% 140% at 100% 30%, ${b.grad_from}, ${b.grad_to} 38%, #0d0000)`
     : (BANNER_BG[b.theme] || BANNER_BG.red)
   return (
-    <div style={{ position:'relative', overflow:'hidden', borderRadius:24, padding:'26px 24px', background:bg }}>
+    <div style={{ position:'relative', overflow:'hidden', borderRadius:20, padding:'26px 24px', background:bg }}>
       <div style={{ position:'absolute', right:-40, bottom:-60, width:220, height:220, borderRadius:'50%', background:'radial-gradient(circle, rgba(255,120,60,.55), rgba(255,60,40,0) 65%)', pointerEvents:'none' }} />
       <div style={{ position:'relative' }}>
         {b.discount > 0 && (
@@ -229,7 +233,7 @@ function BannerSlide({ b, onCta }) {
             {tr('admin.banners.special_offer')}
           </div>
         )}
-        <div style={{ fontFamily:SORA, fontWeight:800, fontSize:34, color:'#fff', marginTop:14, letterSpacing:'-.01em', lineHeight:1 }}>
+        <div style={{ fontFamily:SORA, fontWeight:800, fontSize:36, color:'#fff', marginTop:14, letterSpacing:'-.02em', lineHeight:1.02 }}>
           {b.discount > 0 ? `${b.discount}% ${tr('admin.banners.discount_label')}` : b.title}
         </div>
         {(b.subtitle || b.code) && (
@@ -262,7 +266,7 @@ function BannerCarousel({ banners, t, onCta }) {
   if (!banners.length) return null
   return (
     <div style={{ padding:'10px 20px 4px' }}>
-      <div style={{ overflow:'hidden', borderRadius:24 }}
+      <div style={{ overflow:'hidden', borderRadius:20 }}
         onTouchStart={e => { touchX.current = e.touches[0].clientX }}
         onTouchEnd={e => {
           if (touchX.current === null) return
@@ -286,21 +290,22 @@ function BannerCarousel({ banners, t, onCta }) {
 }
 
 // ─── Categories ───────────────────────────────────────────────────────────────
-function CategoryScroll({ categories, active, onSelect, t, allImage }) {
+function CategoryScroll({ categories, active, onSelect, t, allImage, onViewAll }) {
   const { t: tr } = useTranslation()
   const all = [{ id:null, name: tr('home.all_category'), _isAll:true, image_url:allImage }, ...categories]
   return (
     <div style={{ padding:'14px 0 4px' }}>
-      <div style={{ display:'flex', alignItems:'center', padding:'0 20px 12px' }}>
-        <span style={{ fontFamily:MANROPE, fontWeight:800, fontSize:12, letterSpacing:'.12em', color:t.muted }}>{tr('home.categories_label')}</span>
+      <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', padding:'0 20px 14px' }}>
+        <span style={{ fontFamily:SORA, fontWeight:800, fontSize:18, color:t.fg }}>{tr('home.categories_label_title')}</span>
+        <span onClick={onViewAll} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
       </div>
-      <div className="scroll-x" style={{ gap:14, padding:'2px 20px 6px' }}>
+      <div className="scroll-x" style={{ gap:12, padding:'2px 20px 6px' }}>
         {all.map(c => {
           const isActive = active === c.id
           return (
             <button key={c.id ?? 'all'} onClick={() => onSelect(c.id)}
-              style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:9, border:'none', background:'transparent', cursor:'pointer', width:64, padding:0 }}>
-              <span style={{ width:56, height:56, borderRadius:18, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', background:t.glassS, backdropFilter:'blur(12px) saturate(160%)', WebkitBackdropFilter:'blur(12px) saturate(160%)', boxShadow: isActive ? `0 0 0 2.5px ${t.red}` : `inset 0 0 0 1px ${t.glassBd}`, transition:'box-shadow .15s' }}>
+              style={{ flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', gap:8, border:'none', background:'transparent', cursor:'pointer', width:64, padding:0 }}>
+              <span style={{ width:56, height:56, borderRadius:16, overflow:'hidden', display:'flex', alignItems:'center', justifyContent:'center', background:t.surface, border: isActive ? `1.5px solid ${t.red}` : `1px solid ${t.line}`, transition:'border-color .15s' }}>
                 {c.image_url
                   ? <img src={c.image_url} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
                   : <span style={{ fontSize:24 }}>{c._isAll ? '🍽️' : (c.emoji || '🍴')}</span>
@@ -321,7 +326,7 @@ function SubCategoryRow({ subs, active, onSelect, t }) {
   const { t: tr } = useTranslation()
   if (!subs.length) return null
   return (
-    <div className="scroll-x" style={{ gap:8, padding:'0 20px 12px' }}>
+    <div className="scroll-x" style={{ gap:8, padding:'4px 20px 12px' }}>
       <button onClick={() => onSelect(null)}
         style={{ flexShrink:0, border:'none', cursor:'pointer', borderRadius:'999px', padding:'8px 15px', fontFamily:MANROPE, fontWeight:700, fontSize:12.5,
           background: active===null ? t.red : t.glassS, color: active===null ? '#fff' : t.muted,
@@ -332,12 +337,22 @@ function SubCategoryRow({ subs, active, onSelect, t }) {
       {subs.map(s => {
         const isActive = active === s.id
         return (
-          <button key={s.id} onClick={() => onSelect(s.id)}
-            style={{ flexShrink:0, display:'flex', alignItems:'center', gap:6, border:'none', cursor:'pointer', borderRadius:'999px', padding:'8px 15px', fontFamily:MANROPE, fontWeight:700, fontSize:12.5,
+          <button key={s.id} onClick={() => onSelect(s.id)} title={s.name}
+            style={s.image_url ? {
+              flexShrink:0, border:'none', cursor:'pointer', borderRadius:'999px', overflow:'hidden',
+              width:88, height:38, padding:0,
+              background:t.glassS, backdropFilter:'blur(10px) saturate(160%)', WebkitBackdropFilter:'blur(10px) saturate(160%)',
+              boxShadow: isActive ? `0 0 0 2.5px ${t.red}` : `inset 0 0 0 1px ${t.glassBd}`, transition:'box-shadow .15s',
+            } : {
+              flexShrink:0, display:'flex', alignItems:'center', gap:6, border:'none', cursor:'pointer', borderRadius:'999px', padding:'8px 15px', fontFamily:MANROPE, fontWeight:700, fontSize:12.5,
               background: isActive ? t.red : t.glassS, color: isActive ? '#fff' : t.muted,
               backdropFilter: isActive ? 'none' : 'blur(10px) saturate(160%)', WebkitBackdropFilter: isActive ? 'none' : 'blur(10px) saturate(160%)',
-              border: isActive ? 'none' : `1px solid ${t.glassBd}` }}>
-            <span>{s.emoji}</span>{s.name}
+              border: isActive ? 'none' : `1px solid ${t.glassBd}`,
+            }}>
+            {s.image_url
+              ? <img src={s.image_url} alt={s.name} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
+              : <><span>{s.emoji}</span>{s.name}</>
+            }
           </button>
         )
       })}
@@ -348,51 +363,51 @@ function SubCategoryRow({ subs, active, onSelect, t }) {
 // ─── ProductCard ──────────────────────────────────────────────────────────────
 function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike }) {
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
-  const rating = p.popular ? '4.8' : '4.3'
   const { t: tr } = useTranslation()
 
   return (
-    <div onClick={onTap} style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:22, overflow:'hidden', boxShadow:t.shadow, cursor:'pointer' }}>
+    <div onClick={onTap} style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:16, overflow:'hidden', boxShadow:'0 2px 10px rgba(20,16,14,.06)', cursor:'pointer' }}>
       <div style={{ position:'relative', aspectRatio:'1/1', background:'repeating-linear-gradient(135deg, #ECE8E3 0, #ECE8E3 9px, #F5F2EE 9px, #F5F2EE 18px)', display:'flex', alignItems:'center', justifyContent:'center' }}>
         {p.image_url && <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />}
         {!p.image_url && <span style={{ fontFamily:MONO, fontSize:9, letterSpacing:'.1em', color:t.muted, opacity:.6 }}>RASM</span>}
         {p.discount > 0 && (
-          <span style={{ position:'absolute', top:10, left:10, background:t.red, color:'#fff', fontFamily:MANROPE, fontWeight:800, fontSize:11, padding:'5px 9px', borderRadius:'999px' }}>
+          <span style={{ position:'absolute', top:7, left:7, background:t.red, color:'#fff', fontFamily:MANROPE, fontWeight:800, fontSize:9.5, padding:'4px 7px', borderRadius:'999px' }}>
             -{p.discount}%
           </span>
         )}
         {p.popular && (
-          <span style={{ position:'absolute', top:10, right:10, background:'rgba(20,16,14,.72)', backdropFilter:'blur(4px)', WebkitBackdropFilter:'blur(4px)', color:'#fff', fontFamily:MANROPE, fontWeight:700, fontSize:10, padding:'5px 9px', borderRadius:'999px' }}>
+          <span style={{ position:'absolute', top:7, right:7, background:'rgba(20,16,14,.72)', backdropFilter:'blur(4px)', WebkitBackdropFilter:'blur(4px)', color:'#fff', fontFamily:MANROPE, fontWeight:700, fontSize:8.5, padding:'4px 7px', borderRadius:'999px' }}>
             {tr('home.popular_badge')}
           </span>
         )}
-        {/* Like — bottom-left per spec */}
-        <button onClick={e => { e.stopPropagation(); onLike() }} style={{ position:'absolute', bottom:10, left:10, width:32, height:32, borderRadius:'50%', border:'none', background:'rgba(255,255,255,.85)', backdropFilter:'blur(6px)', WebkitBackdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
-          <IHeart s={15} c={liked ? t.red : t.muted} filled={liked} />
+        {/* Like — top-right, reference-style */}
+        <button onClick={e => { e.stopPropagation(); onLike() }} style={{ position:'absolute', bottom:7, left:7, width:26, height:26, borderRadius:'50%', border:'none', background:'rgba(255,255,255,.85)', backdropFilter:'blur(6px)', WebkitBackdropFilter:'blur(6px)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+          <IHeart s={12} c={liked ? t.red : t.muted} filled={liked} />
         </button>
       </div>
-      <div style={{ padding:'13px 13px 15px' }}>
-        <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, lineHeight:1.25, color:t.fg, minHeight:35 }}>{p.name}</div>
-        <div style={{ display:'flex', alignItems:'center', gap:5, margin:'6px 0 11px' }}>
-          <span style={{ color:'#f5a623', fontSize:12 }}>★</span>
-          <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.muted }}>{rating}</span>
-        </div>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div>
-            <span style={{ fontFamily:SORA, fontWeight:800, fontSize:15, color:t.fg }}>{fmtNum(final)}</span>
-            {' '}<span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:11, color:t.muted }}>{tr('common.currency')}</span>
-            {p.discount > 0 && <div style={{ fontFamily:MANROPE, fontSize:10, color:t.muted, textDecoration:'line-through', marginTop:1 }}>{fmtNum(p.price)} {tr('common.currency')}</div>}
+      <div style={{ padding:'9px 9px 11px' }}>
+        <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12, lineHeight:1.25, color:t.fg, minHeight:29 }}>{p.name}</div>
+        {p.weight && (
+          <div style={{ marginTop:4 }}>
+            <span style={{ fontFamily:MANROPE, fontWeight:500, fontSize:10.5, color:t.muted }}>{p.weight}</span>
           </div>
-          <div onClick={e => e.stopPropagation()}>
+        )}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:9 }}>
+          <div style={{ minWidth:0 }}>
+            <span style={{ fontFamily:SORA, fontWeight:800, fontSize:13, color:t.red }}>{fmtNum(final)}</span>
+            {' '}<span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:9.5, color:t.red }}>{tr('common.currency')}</span>
+            {p.discount > 0 && <div style={{ fontFamily:MANROPE, fontSize:9, color:t.muted, textDecoration:'line-through', marginTop:1 }}>{fmtNum(p.price)} {tr('common.currency')}</div>}
+          </div>
+          <div onClick={e => e.stopPropagation()} style={{ flexShrink:0 }}>
             {qty > 0 ? (
-              <div style={{ display:'flex', alignItems:'center', gap:5 }}>
-                <button onClick={onDec} style={{ width:30, height:30, borderRadius:9, border:`1.5px solid ${t.red}44`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IMinus s={13} c={t.red}/></button>
-                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:13, color:t.fg, minWidth:14, textAlign:'center' }}>{qty}</span>
-                <button onClick={onAdd} style={{ width:30, height:30, borderRadius:9, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IPlus s={13} c="#fff"/></button>
+              <div style={{ display:'flex', alignItems:'center', gap:3 }}>
+                <button onClick={onDec} style={{ width:24, height:24, borderRadius:8, border:`1.5px solid ${t.red}44`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IMinus s={11} c={t.red}/></button>
+                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12, color:t.fg, minWidth:12, textAlign:'center' }}>{qty}</span>
+                <button onClick={onAdd} style={{ width:24, height:24, borderRadius:8, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IPlus s={11} c="#fff"/></button>
               </div>
             ) : (
-              <button onClick={onAdd} style={{ width:34, height:34, borderRadius:12, border:'none', background:t.red, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', fontSize:22, lineHeight:1, fontWeight:300 }}>
-                +
+              <button onClick={onAdd} style={{ width:28, height:28, borderRadius:9, border:'none', background:t.red, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+                <ICart s={13} c="#fff" />
               </button>
             )}
           </div>
@@ -671,22 +686,171 @@ function CheckoutSheet({ t, total, onClose, onSubmit, form, setForm, errors, sub
 }
 
 // ─── Bottom Nav — floating glass (spec: left:14 right:14 bottom:16) ──────────
-function BottomNav({ t }) {
-  const [active, setActive] = useState(0)
+function BottomNav({ t, active, onChange, cartCount }) {
   const { t: tr } = useTranslation()
   const tabs = [
-    { Icon:IHome,   label: tr('nav.home') },
-    { Icon:IPerson, label: tr('nav.profile') },
+    { Icon:IHome,    label: tr('nav.home') },
+    { Icon:IGrid,    label: tr('nav.catalog') },
+    { Icon:IHeart,   label: tr('nav.favorites') },
+    { Icon:ICart,    label: tr('nav.cart'), badge: cartCount },
+    { Icon:IPerson,  label: tr('nav.profile') },
   ]
   return (
-    <nav style={{ position:'fixed', left:14, right:14, bottom:16, display:'flex', alignItems:'center', justifyContent:'space-around', padding:'13px 8px', borderRadius:28, background:t.glassS, backdropFilter:'blur(26px) saturate(185%)', WebkitBackdropFilter:'blur(26px) saturate(185%)', border:`1px solid ${t.glassBd}`, boxShadow:'0 14px 38px -10px rgba(0,0,0,.30)', zIndex:40 }}>
-      {tabs.map(({ Icon, label }, i) => (
-        <button key={i} onClick={() => setActive(i)} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5, color: i===active ? t.red : t.muted, background:'none', border:'none', cursor:'pointer', padding:'0 10px' }}>
-          <Icon s={23} c={i===active ? t.red : t.muted} />
-          <span style={{ fontFamily:MANROPE, fontWeight: i===active ? 700 : 600, fontSize:11 }}>{label}</span>
+    <nav style={{ position:'fixed', left:14, right:14, bottom:16, display:'flex', alignItems:'center', justifyContent:'space-around', padding:'13px 6px', borderRadius:28, background:t.glassS, backdropFilter:'blur(26px) saturate(185%)', WebkitBackdropFilter:'blur(26px) saturate(185%)', border:`1px solid ${t.glassBd}`, boxShadow:'0 14px 38px -10px rgba(0,0,0,.30)', zIndex:40 }}>
+      {tabs.map(({ Icon, label, badge }, i) => (
+        <button key={i} onClick={() => onChange(i)} style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', gap:5, color: i===active ? t.red : t.muted, background:'none', border:'none', cursor:'pointer', padding:'0 6px' }}>
+          <span style={{ position:'relative' }}>
+            <Icon s={22} c={i===active ? t.red : t.muted} />
+            {!!badge && (
+              <span style={{ position:'absolute', top:-7, right:-9, minWidth:16, height:16, padding:'0 4px', borderRadius:'999px', background:t.red, color:'#fff', fontFamily:MANROPE, fontWeight:800, fontSize:9.5, display:'flex', alignItems:'center', justifyContent:'center' }}>{badge}</span>
+            )}
+          </span>
+          <span style={{ fontFamily:MANROPE, fontWeight: i===active ? 700 : 600, fontSize:10.5 }}>{label}</span>
         </button>
       ))}
     </nav>
+  )
+}
+
+// ─── Catalog (browse all top-level categories) ────────────────────────────────
+function CatalogScreen({ t, categories, onSelectCategory }) {
+  const { t: tr } = useTranslation()
+  const topCats = categories.filter(c => !c.parent_id)
+  return (
+    <div style={{ position:'relative', zIndex:1, padding:'20px 20px 120px' }}>
+      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.catalog')}</div>
+      {topCats.length === 0 && (
+        <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('home.nothing_found')}</div>
+      )}
+      <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+        {topCats.map(c => (
+          <button key={c.id} onClick={() => onSelectCategory(c.id)}
+            style={{ display:'flex', alignItems:'center', gap:14, background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:14, boxShadow:'0 2px 10px rgba(20,16,14,.06)', cursor:'pointer', textAlign:'left' }}>
+            <span style={{ width:52, height:52, borderRadius:14, overflow:'hidden', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', background:t.glassS }}>
+              {c.image_url
+                ? <img src={c.image_url} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+                : <span style={{ fontSize:24 }}>{c.emoji || '🍽️'}</span>
+              }
+            </span>
+            <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:15, color:t.fg }}>{c.name}</div>
+              <div style={{ fontFamily:MANROPE, fontSize:12, color:t.muted, marginTop:2 }}>{tr('admin.categories.subcategory_count', { count: c.children_count })}</div>
+            </div>
+            <IArrow s={16} c={t.muted} />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Favorites (liked products) ───────────────────────────────────────────────
+function FavoritesScreen({ t, liked, onTap, onAdd, onDec, getQty, onLike }) {
+  const { t: tr } = useTranslation()
+  const [all,     setAll]     = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    getProducts({ available:true }).then(r => setAll(r.data)).finally(() => setLoading(false))
+  }, [])
+
+  const favProducts = all.filter(p => liked.has(p.id))
+
+  return (
+    <div style={{ position:'relative', zIndex:1, padding:'20px 20px 120px' }}>
+      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.favorites')}</div>
+      {loading && (
+        <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('common.loading')}</div>
+      )}
+      {!loading && favProducts.length === 0 && (
+        <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('home.favorites_empty')}</div>
+      )}
+      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+        {favProducts.map(p => (
+          <ProductCard key={p.id} p={p} t={t}
+            onTap={() => onTap(p)}
+            onAdd={() => onAdd(p)}
+            onDec={() => onDec(p.id)}
+            qty={getQty(p.id)}
+            liked={liked.has(p.id)}
+            onLike={() => onLike(p.id)} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Profile (Telegram user info + order history) ────────────────────────────
+const ORDER_STATUS_COLOR = { new:'#3B82F6', confirmed:'#8B5CF6', preparing:'#F59E0B', delivering:'#06B6D4', delivered:'#22C55E', cancelled:'#EF4444' }
+
+function ProfileScreen({ t, tgUser, telegramChatId }) {
+  const { t: tr } = useTranslation()
+  const [orders,  setOrders]  = useState([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!telegramChatId) return
+    setLoading(true)
+    getMyOrders(telegramChatId).then(r => setOrders(r.data)).finally(() => setLoading(false))
+  }, [telegramChatId])
+
+  const displayName = tgUser ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') : tr('profile.guest')
+
+  return (
+    <div style={{ position:'relative', zIndex:1, padding:'20px 20px 120px' }}>
+      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.profile')}</div>
+
+      {/* Profile card */}
+      <div style={{ display:'flex', alignItems:'center', gap:14, background:t.glassS, backdropFilter:'blur(18px) saturate(170%)', WebkitBackdropFilter:'blur(18px) saturate(170%)', border:`1px solid ${t.glassBd}`, borderRadius:22, padding:18, boxShadow:t.shadow, marginBottom:26 }}>
+        <div style={{ width:56, height:56, borderRadius:'50%', overflow:'hidden', flexShrink:0, background:t.surface, display:'flex', alignItems:'center', justifyContent:'center', border:`1px solid ${t.glassBd}` }}>
+          {tgUser?.photo_url
+            ? <img src={tgUser.photo_url} alt={displayName} style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            : <IPerson s={26} c={t.muted} />
+          }
+        </div>
+        <div style={{ minWidth:0 }}>
+          <div style={{ fontFamily:SORA, fontWeight:800, fontSize:17, color:t.fg }}>{displayName}</div>
+          {tgUser?.username && <div style={{ fontFamily:MANROPE, fontSize:13, color:t.muted, marginTop:2 }}>@{tgUser.username}</div>}
+        </div>
+      </div>
+
+      <div style={{ fontFamily:SORA, fontWeight:700, fontSize:17, color:t.fg, marginBottom:14 }}>{tr('profile.orders_title')}</div>
+
+      {!telegramChatId && (
+        <div style={{ textAlign:'center', padding:'40px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5, lineHeight:1.65 }}>{tr('profile.no_telegram')}</div>
+      )}
+      {telegramChatId && loading && (
+        <div style={{ textAlign:'center', padding:'40px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('common.loading')}</div>
+      )}
+      {telegramChatId && !loading && orders.length === 0 && (
+        <div style={{ textAlign:'center', padding:'40px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('profile.no_orders')}</div>
+      )}
+
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        {orders.map(o => (
+          <div key={o.id} style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:14, boxShadow:t.shadow }}>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+              <div style={{ display:'flex', alignItems:'center', gap:9 }}>
+                <div style={{ width:34, height:34, borderRadius:10, background:t.glassS, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <IBox s={16} c={t.fg} />
+                </div>
+                <div>
+                  <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:13.5, color:t.fg }}>#{o.id}</div>
+                  <div style={{ fontFamily:MANROPE, fontSize:11, color:t.muted }}>{new Date(o.created_at).toLocaleDateString()}</div>
+                </div>
+              </div>
+              <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:10.5, padding:'5px 10px', borderRadius:20, color:'#fff', background: ORDER_STATUS_COLOR[o.status] || t.muted, flexShrink:0 }}>
+                {tr('status.' + o.status)}
+              </span>
+            </div>
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+              <span style={{ fontFamily:MANROPE, fontSize:12, color:t.muted }}>{tr('profile.items_count', { count: o.items.length })}</span>
+              <span style={{ fontFamily:SORA, fontWeight:800, fontSize:14, color:t.fg }}>{fmtNum(o.total)} {tr('common.currency')}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -701,9 +865,19 @@ function Toast({ msg, show }) {
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [isDark,     setIsDark]    = useState(false)
+  const [isDark,     setIsDark]    = useState(() => !window.matchMedia?.('(prefers-color-scheme: light)')?.matches)
   const t = THEMES[isDark ? 'dark' : 'light']
   const { t: tr, i18n } = useTranslation()
+
+  // Follow the device's light/dark setting live (dark is the default; only an
+  // explicit "light" system preference switches to the light theme)
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-color-scheme: light)')
+    if (!mq) return
+    const handler = e => setIsDark(!e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const [categories, setCats]      = useState([])
   const [products,   setProducts]  = useState([])
@@ -711,7 +885,6 @@ export default function Home() {
   const [allCatImg,  setAllCatImg] = useState('')
   const [activeCat,  setActiveCat] = useState(null)
   const [activeSub,  setActiveSub] = useState(null)
-  const [search,     setSearch]    = useState('')
   const [detail,     setDetail]    = useState(null)
   const [cartOpen,   setCartOpen]  = useState(false)
   const [checkout,   setCheckout]  = useState(false)
@@ -721,7 +894,21 @@ export default function Home() {
   const [form,       setForm]      = useState({ name:'', phone:'', address:'', note:'', payment:'naqd' })
   const [errors,     setErrors]    = useState({})
   const [submitting, setSubmitting]= useState(false)
+  const [nav,        setNav]       = useState(0)   // 0 = home, 1 = profile
+  const [tgUser,     setTgUser]    = useState(null)
   const toastTimer = useRef(null)
+
+  // Telegram Mini App integration — reads the current user from the WebApp
+  // SDK (injected only when opened inside Telegram) and tells Telegram the
+  // app is ready / lets it expand to full height.
+  useEffect(() => {
+    const wa = window.Telegram?.WebApp
+    if (!wa) return
+    wa.ready()
+    wa.expand()
+    if (wa.initDataUnsafe?.user) setTgUser(wa.initDataUnsafe.user)
+  }, [])
+  const telegramChatId = tgUser?.id ? String(tgUser.id) : ''
 
   const { items, addItem, removeItem, decrementItem, clearCart } = useCartStore()
   const totalItems = items.reduce((s, i) => s + i.qty, 0)
@@ -733,6 +920,14 @@ export default function Home() {
   const subCats = activeCat ? categories.filter(c => c.parent_id === activeCat) : []
 
   const handleSelectCat = (id) => { setActiveCat(id); setActiveSub(null) }
+
+  // Bottom nav: 0=Home 1=Catalog 2=Favorites 3=Cart(overlay) 4=Profile
+  const handleNavChange = (i) => {
+    if (i === 3) { setCartOpen(true); return }
+    setCartOpen(false)
+    setNav(i)
+  }
+  const handleCatalogSelect = (id) => { handleSelectCat(id); setNav(0) }
 
   useEffect(() => {
     getBanners().then(r => setBanners(r.data.filter(b => b.active)))
@@ -747,9 +942,8 @@ export default function Home() {
     const params = { available:true, lang: i18n.language }
     const catFilter = activeSub || activeCat
     if (catFilter) params.cat_id = catFilter
-    if (search)    params.search  = search
     getProducts(params).then(r => setProducts(r.data))
-  }, [activeCat, activeSub, search, i18n.language])
+  }, [activeCat, activeSub, i18n.language])
 
   const showToast = msg => {
     clearTimeout(toastTimer.current)
@@ -792,7 +986,7 @@ export default function Home() {
     if (!validateForm()) return
     setSubmitting(true)
     try {
-      const res = await createOrder({ ...form, subtotal, delivery, total, items: items.map(i => ({ product_id:i.id, name:i.name, price:i.finalPrice, qty:i.qty, emoji:'' })) })
+      const res = await createOrder({ ...form, subtotal, delivery, total, telegram_chat_id: telegramChatId, items: items.map(i => ({ product_id:i.id, name:i.name, price:i.finalPrice, qty:i.qty, emoji:'' })) })
       clearCart(); setCheckout(false); setCartOpen(false); setSuccess(res.data)
     } catch { showToast(tr('checkout.error')) }
     finally { setSubmitting(false) }
@@ -845,36 +1039,45 @@ export default function Home() {
     <div style={{ background:t.bg, minHeight:'100dvh', paddingBottom:100, position:'relative', transition:'background .3s ease' }}>
       <Blobs t={t} />
       <div style={{ position:'relative', zIndex:1 }}>
-        <Header t={t} totalItems={totalItems} onCartOpen={() => setCartOpen(true)} isDark={isDark} onToggle={() => setIsDark(d => !d)} />
-        <SearchBar t={t} value={search} onChange={setSearch} />
-        <BannerCarousel banners={banners} t={t} onCta={handleBannerCta} />
-        <CategoryScroll categories={topCats} active={activeCat} onSelect={handleSelectCat} t={t} allImage={allCatImg} />
-        <SubCategoryRow subs={subCats} active={activeSub} onSelect={setActiveSub} t={t} />
-        <div style={{ padding:'12px 20px 20px' }}>
-          <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:14 }}>
-            <span style={{ fontFamily:SORA, fontWeight:700, fontSize:19, color:t.fg }}>{tr('home.popular_dishes')}</span>
-            <span onClick={() => handleSelectCat(null)} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
-          </div>
-          {products.length === 0 && (
-            <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontWeight:500, fontSize:14 }}>
-              {tr('home.nothing_found')}
+        <Header t={t} totalItems={totalItems} onCartOpen={() => setCartOpen(true)} onFavorites={() => handleNavChange(2)} isDark={isDark} onToggle={() => setIsDark(d => !d)} />
+        {nav === 1 ? (
+          <CatalogScreen t={t} categories={categories} onSelectCategory={handleCatalogSelect} />
+        ) : nav === 2 ? (
+          <FavoritesScreen t={t} liked={liked} onTap={setDetail} onAdd={handleAdd} onDec={id => decrementItem(id)} getQty={getQty} onLike={toggleLike} />
+        ) : nav === 4 ? (
+          <ProfileScreen t={t} tgUser={tgUser} telegramChatId={telegramChatId} />
+        ) : (
+          <>
+            <BannerCarousel banners={banners} t={t} onCta={handleBannerCta} />
+            <CategoryScroll categories={topCats} active={activeCat} onSelect={handleSelectCat} t={t} allImage={allCatImg} onViewAll={() => setNav(1)} />
+            <SubCategoryRow subs={subCats} active={activeSub} onSelect={setActiveSub} t={t} />
+            <div style={{ padding:'12px 20px 20px' }}>
+              <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:14 }}>
+                <span style={{ fontFamily:SORA, fontWeight:700, fontSize:19, color:t.fg }}>{tr('home.popular_dishes')}</span>
+                <span onClick={() => handleSelectCat(null)} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
+              </div>
+              {products.length === 0 && (
+                <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontWeight:500, fontSize:14 }}>
+                  {tr('home.nothing_found')}
+                </div>
+              )}
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
+                {products.map(p => (
+                  <ProductCard key={p.id} p={p} t={t}
+                    onTap={() => setDetail(p)}
+                    onAdd={() => handleAdd(p)}
+                    onDec={() => decrementItem(p.id)}
+                    qty={getQty(p.id)}
+                    liked={liked.has(p.id)}
+                    onLike={() => toggleLike(p.id)} />
+                ))}
+              </div>
             </div>
-          )}
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 }}>
-            {products.map(p => (
-              <ProductCard key={p.id} p={p} t={t}
-                onTap={() => setDetail(p)}
-                onAdd={() => handleAdd(p)}
-                onDec={() => decrementItem(p.id)}
-                qty={getQty(p.id)}
-                liked={liked.has(p.id)}
-                onLike={() => toggleLike(p.id)} />
-            ))}
-          </div>
-        </div>
+          </>
+        )}
       </div>
 
-      <BottomNav t={t} />
+      <BottomNav t={t} active={cartOpen ? 3 : nav} onChange={handleNavChange} cartCount={totalItems} />
 
       <Toast msg={toast.msg} show={toast.show} />
     </div>

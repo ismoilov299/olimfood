@@ -30,8 +30,6 @@
     "ru": "РУ"
   },
   "home": {
-    "search_placeholder": "Маҳсулот қидириш...",
-    "categories_label": "КАТЕГОРИЯЛАР",
     "all_category": "Барчаси",
     "popular_dishes": "Машҳур таомлар",
     "view_all": "Барчаси",
@@ -47,7 +45,9 @@
     "size_large": "Катта",
     "discount": "чегирма",
     "product_image": "МАҲСУЛОТ РАСМИ",
-    "dish": "Таом"
+    "dish": "Таом",
+    "categories_label_title": "Категориялар",
+    "favorites_empty": "Ҳали севимли маҳсулот йўқ"
   },
   "cart": {
     "title": "Саватча",
@@ -90,7 +90,10 @@
   },
   "nav": {
     "home": "Асосий",
-    "profile": "Профил"
+    "profile": "Профил",
+    "catalog": "Каталог",
+    "favorites": "Севимли",
+    "cart": "Саватча"
   },
   "admin": {
     "login": {
@@ -295,5 +298,16 @@
       "success_changed": "Парол муваффақиятли ўзгартирилди",
       "error_generic": "Хатолик юз берди"
     }
+  },
+  "profile": {
+    "guest": "Меҳмон",
+    "orders_title": "Буюртмалар тарихи",
+    "no_telegram": "Буюртмалар тарихини кўриш учун иловани Telegram орқали очинг",
+    "no_orders": "Ҳали буюртма бермагансиз",
+    "items_count": "{{count}} та маҳсулот"
+  },
+  "header": {
+    "dark_mode": "Тунги режим",
+    "light_mode": "Кундузги режим"
   }
 }

@@ -30,8 +30,6 @@
     "en": "EN"
   },
   "home": {
-    "search_placeholder": "Поиск блюд...",
-    "categories_label": "КАТЕГОРИИ",
     "all_category": "Все",
     "popular_dishes": "Популярные блюда",
     "view_all": "Все",
@@ -47,7 +45,9 @@
     "size_large": "Большой",
     "discount": "скидка",
     "product_image": "ФОТО ТОВАРА",
-    "dish": "Блюдо"
+    "dish": "Блюдо",
+    "categories_label_title": "Категории",
+    "favorites_empty": "У вас пока нет избранных товаров"
   },
   "cart": {
     "title": "Корзина",
@@ -90,7 +90,10 @@
   },
   "nav": {
     "home": "Главная",
-    "profile": "Профиль"
+    "profile": "Профиль",
+    "catalog": "Каталог",
+    "favorites": "Избранное",
+    "cart": "Корзина"
   },
   "admin": {
     "login": {
@@ -295,5 +298,16 @@
       "success_changed": "Пароль успешно изменён",
       "error_generic": "Произошла ошибка"
     }
+  },
+  "profile": {
+    "guest": "Гость",
+    "orders_title": "История заказов",
+    "no_telegram": "Откройте приложение через Telegram, чтобы видеть историю заказов",
+    "no_orders": "У вас пока нет заказов",
+    "items_count": "{{count}} товаров"
+  },
+  "header": {
+    "dark_mode": "Тёмная тема",
+    "light_mode": "Светлая тема"
   }
 }

@@ -30,6 +30,7 @@ export const deleteBanner = (id) => api.delete(`/banners/${id}`)
 
 // ── Orders ─────────────────────────────────────────
 export const getOrders = (params) => api.get('/orders', { params })
+export const getMyOrders = (telegram_chat_id) => api.get('/orders/my', { params: { telegram_chat_id } })
 export const getOrder = (id) => api.get(`/orders/${id}`)
 export const createOrder = (data) => api.post('/orders', data)
 export const updateOrderStatus = (id, status) =>

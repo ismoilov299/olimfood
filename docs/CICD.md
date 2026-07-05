@@ -31,8 +31,28 @@ Left untouched by design:
 - **`cf-tunnel.service`** — Cloudflare *quick tunnel*; its public URL changes on
   every restart and would break the bot's `WEBAPP_URL`. Never restarted by deploy.
 - **`.env`** — untracked; holds `BOT_TOKEN` / `WEBAPP_URL`. Never modified.
-- **`backend/olimfood.db`** and **`backend/uploads/`** — gitignored, so `git reset`
-  never touches production data.
+
+## Database (`backend/olimfood.db`)
+
+The SQLite DB is **normally preserved** across deploys, so orders and admin edits
+made on the server are never lost by a code-only deploy.
+
+When you *want* the server DB to change, push the DB file explicitly:
+
+```bash
+git add -f backend/olimfood.db
+git commit -m "data: update menu"
+git push
+```
+
+On that deploy the script detects the DB changed in the push, replaces the server
+DB with the pushed one, and saves the previous live DB to
+`backend/olimfood.db.bak-<timestamp>`. Deploys that do **not** include a DB change
+keep the live server DB untouched.
+
+> ⚠️ Pushing the DB overwrites live server data (any orders/edits since your local
+> copy) with your committed snapshot — a timestamped backup is kept on the server.
+> `backend/uploads/` is not versioned; keep product images in sync separately.
 
 ## Required GitHub secrets
 

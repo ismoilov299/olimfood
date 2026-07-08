@@ -24,24 +24,24 @@ const THEMES = {
     blobC:    'rgba(255,90,70,0.13)',
   },
   dark: {
-    bg:       '#141110',
-    surface:  '#1E1A18',
-    fg:       '#F4EFEC',
-    muted:    '#9C928B',
-    line:     'rgba(255,255,255,0.09)',
-    red:      '#FF4148',
+    bg:       '#0D0D0F',
+    surface:  '#17181B',
+    fg:       '#FFFFFF',
+    muted:    '#A7A7A7',
+    line:     '#2A2A2A',
+    red:      '#E30613',
     shadow:   '0 10px 34px rgba(0,0,0,0.55)',
-    glass:    'rgba(32,28,26,0.46)',
-    glassS:   'rgba(42,38,36,0.62)',
-    glassBd:  'rgba(255,255,255,0.13)',
-    blobA:    'rgba(255,70,60,0.26)',
+    glass:    'rgba(23,24,27,0.46)',
+    glassS:   'rgba(30,31,35,0.62)',
+    glassBd:  'rgba(255,255,255,0.10)',
+    blobA:    'rgba(227,6,19,0.26)',
     blobB:    'rgba(255,150,50,0.17)',
-    blobC:    'rgba(255,80,60,0.18)',
+    blobC:    'rgba(227,6,19,0.16)',
   },
 }
 
 const fmtNum = n => n ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0'
-const SORA    = "'Sora', sans-serif"
+const INTER   = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 const MANROPE = "'Manrope', sans-serif"
 const MONO    = "'Space Mono', monospace"
 
@@ -161,7 +161,14 @@ function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle }) {
         <IMenu s={22} c={t.fg} />
       </button>
 
-      <img src="/logo-oq.png" alt="OlimFood" style={{ height:36, objectFit:'contain', display:'block' }} />
+      <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
+        <img className="anim-logo" src={isDark ? '/logo-oq-dark.png' : '/logo-oq.png'} alt="OlimFood" style={{ height:32, objectFit:'contain', display:'block' }} />
+        <div className="anim-tagline" style={{ display:'flex', alignItems:'center', gap:5, marginTop:3 }}>
+          <span style={{ width:11, height:1.5, background:t.red, display:'inline-block' }} />
+          <span style={{ fontFamily:MANROPE, fontSize:6.5, fontWeight:700, letterSpacing:.8, color:t.muted, whiteSpace:'nowrap' }}>{tr('header.tagline')}</span>
+          <span style={{ width:11, height:1.5, background:t.red, display:'inline-block' }} />
+        </div>
+      </div>
 
       <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
         <button onClick={onFavorites} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
@@ -209,7 +216,7 @@ function BannerSlide({ b, onCta }) {
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(transparent 30%, rgba(0,0,0,.75))' }} />
         {(b.image_title || b.image_sub) && (
           <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'16px 20px' }}>
-            {b.image_title && <div style={{ fontFamily:SORA, fontSize:22, fontWeight:800, color:'#fff', lineHeight:1.15 }}>{b.image_title}</div>}
+            {b.image_title && <div style={{ fontFamily:INTER, fontSize:22, fontWeight:800, color:'#fff', lineHeight:1.15 }}>{b.image_title}</div>}
             {b.image_sub   && <div style={{ fontFamily:MANROPE, fontSize:12, color:'rgba(255,255,255,.6)', marginTop:3 }}>{b.image_sub}</div>}
           </div>
         )}
@@ -233,7 +240,7 @@ function BannerSlide({ b, onCta }) {
             {tr('admin.banners.special_offer')}
           </div>
         )}
-        <div style={{ fontFamily:SORA, fontWeight:800, fontSize:36, color:'#fff', marginTop:14, letterSpacing:'-.02em', lineHeight:1.02 }}>
+        <div style={{ fontFamily:INTER, fontWeight:800, fontSize:36, color:'#fff', marginTop:14, letterSpacing:'-.02em', lineHeight:1.02 }}>
           {b.discount > 0 ? `${b.discount}% ${tr('admin.banners.discount_label')}` : b.title}
         </div>
         {(b.subtitle || b.code) && (
@@ -296,7 +303,7 @@ function CategoryScroll({ categories, active, onSelect, t, allImage, onViewAll }
   return (
     <div style={{ padding:'14px 0 4px' }}>
       <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', padding:'0 20px 14px' }}>
-        <span style={{ fontFamily:SORA, fontWeight:800, fontSize:18, color:t.fg }}>{tr('home.categories_label_title')}</span>
+        <span style={{ fontFamily:INTER, fontWeight:800, fontSize:18, color:t.fg }}>{tr('home.categories_label_title')}</span>
         <span onClick={onViewAll} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
       </div>
       <div className="scroll-x" style={{ gap:12, padding:'2px 20px 6px' }}>
@@ -361,12 +368,12 @@ function SubCategoryRow({ subs, active, onSelect, t }) {
 }
 
 // ─── ProductCard ──────────────────────────────────────────────────────────────
-function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike }) {
+function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike, index=0 }) {
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
   const { t: tr } = useTranslation()
 
   return (
-    <div onClick={onTap} style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:16, overflow:'hidden', boxShadow:'0 2px 10px rgba(20,16,14,.06)', cursor:'pointer' }}>
+    <div className="anim-card" onClick={onTap} style={{ animationDelay:`${Math.min(index,10)*40}ms`, background:t.surface, border:`1px solid ${t.line}`, borderRadius:16, overflow:'hidden', boxShadow:'0 2px 10px rgba(20,16,14,.06)', cursor:'pointer' }}>
       <div style={{ position:'relative', aspectRatio:'1/1', background:'repeating-linear-gradient(135deg, #ECE8E3 0, #ECE8E3 9px, #F5F2EE 9px, #F5F2EE 18px)', display:'flex', alignItems:'center', justifyContent:'center' }}>
         {p.image_url && <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover' }} />}
         {!p.image_url && <span style={{ fontFamily:MONO, fontSize:9, letterSpacing:'.1em', color:t.muted, opacity:.6 }}>RASM</span>}
@@ -394,7 +401,7 @@ function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike }) {
         )}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:9 }}>
           <div style={{ minWidth:0 }}>
-            <span style={{ fontFamily:SORA, fontWeight:800, fontSize:13, color:t.red }}>{fmtNum(final)}</span>
+            <span style={{ fontFamily:INTER, fontWeight:800, fontSize:13, color:t.red }}>{fmtNum(final)}</span>
             {' '}<span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:9.5, color:t.red }}>{tr('common.currency')}</span>
             {p.discount > 0 && <div style={{ fontFamily:MANROPE, fontSize:9, color:t.muted, textDecoration:'line-through', marginTop:1 }}>{fmtNum(p.price)} {tr('common.currency')}</div>}
           </div>
@@ -460,7 +467,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
           <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:14 }}>
             <div>
               <div style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.red, letterSpacing:'.04em', marginBottom:6 }}>{p.category_name || tr('home.dish')}</div>
-              <div style={{ fontFamily:SORA, fontWeight:800, fontSize:25, color:t.fg, letterSpacing:'-.01em', lineHeight:1.1 }}>{p.name}</div>
+              <div style={{ fontFamily:INTER, fontWeight:800, fontSize:25, color:t.fg, letterSpacing:'-.01em', lineHeight:1.1 }}>{p.name}</div>
             </div>
             <div style={{ flexShrink:0, display:'flex', alignItems:'center', gap:6, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px solid ${t.glassBd}`, padding:'8px 12px', borderRadius:14 }}>
               <span style={{ color:'#f5a623' }}>★</span>
@@ -473,7 +480,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
             {SIZES.map(sz => {
               const on = size === sz.id
               return (
-                <button key={sz.id} onClick={() => setSize(sz.id)} style={{ flex:1, padding:'14px 0', borderRadius:14, cursor:'pointer', fontFamily:MANROPE, fontWeight:700, fontSize:14, textAlign:'center', border: on ? `1.5px solid ${t.red}` : `1px solid ${t.line}`, background: on ? (isDark ? 'rgba(255,65,72,.12)' : 'rgba(229,35,43,.06)') : 'transparent', color: on ? t.red : t.fg }}>
+                <button key={sz.id} onClick={() => setSize(sz.id)} style={{ flex:1, padding:'14px 0', borderRadius:14, cursor:'pointer', fontFamily:MANROPE, fontWeight:700, fontSize:14, textAlign:'center', border: on ? `1.5px solid ${t.red}` : `1px solid ${t.line}`, background: on ? (isDark ? 'rgba(255,45,45,.14)' : 'rgba(229,35,43,.06)') : 'transparent', color: on ? t.red : t.fg }}>
                   {sz.name}
                 </button>
               )
@@ -485,7 +492,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
               <button onClick={() => setQty(q => Math.max(1, q-1))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IMinus s={15} c={t.fg} />
               </button>
-              <span style={{ fontFamily:SORA, fontWeight:800, fontSize:17, color:t.fg, minWidth:18, textAlign:'center' }}>{qty}</span>
+              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg, minWidth:18, textAlign:'center' }}>{qty}</span>
               <button onClick={() => setQty(q => q+1)} style={{ width:30, height:30, borderRadius:10, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IPlus s={15} c="#fff" />
               </button>
@@ -498,7 +505,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
       <div style={{ position:'fixed', bottom:0, left:0, right:0, display:'flex', alignItems:'center', gap:16, padding:'16px 22px 30px', background:t.glassS, backdropFilter:'blur(26px) saturate(185%)', WebkitBackdropFilter:'blur(26px) saturate(185%)', borderTop:`1px solid ${t.glassBd}`, zIndex:410 }}>
         <div style={{ display:'flex', flexDirection:'column' }}>
           <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:11, color:t.muted }}>{tr('home.total_price')}</span>
-          <span style={{ fontFamily:SORA, fontWeight:800, fontSize:21, color:t.fg }}>
+          <span style={{ fontFamily:INTER, fontWeight:800, fontSize:21, color:t.fg }}>
             {fmtNum(final * qty)} <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.muted }}>{tr('common.currency')}</span>
           </span>
         </div>
@@ -522,7 +529,7 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
         <button onClick={onClose} style={{ width:42, height:42, borderRadius:14, border:`1px solid ${t.glassBd}`, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           <IBack s={20} c={t.fg} />
         </button>
-        <span style={{ fontFamily:SORA, fontWeight:800, fontSize:20, color:t.fg }}>{tr('cart.title')}</span>
+        <span style={{ fontFamily:INTER, fontWeight:800, fontSize:20, color:t.fg }}>{tr('cart.title')}</span>
         <span style={{ marginLeft:'auto', fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.muted }}>{totalItems} {tr('cart.item_count')}</span>
       </div>
 
@@ -532,7 +539,7 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
           <div style={{ width:88, height:88, borderRadius:28, background:t.glassS, backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)', border:`1px solid ${t.glassBd}`, display:'flex', alignItems:'center', justifyContent:'center' }}>
             <ICart s={38} c={t.muted} />
           </div>
-          <div style={{ fontFamily:SORA, fontWeight:700, fontSize:17, color:t.fg }}>{tr('cart.empty_title')}</div>
+          <div style={{ fontFamily:INTER, fontWeight:700, fontSize:17, color:t.fg }}>{tr('cart.empty_title')}</div>
           <div style={{ fontFamily:MANROPE, fontWeight:500, fontSize:14, lineHeight:1.5, color:t.muted, maxWidth:230 }}>{tr('cart.empty_sub')}</div>
           <button onClick={onClose} style={{ marginTop:6, background:t.red, color:'#fff', border:'none', borderRadius:16, padding:'14px 24px', fontFamily:MANROPE, fontWeight:700, fontSize:14, cursor:'pointer' }}>{tr('cart.go_menu')}</button>
         </div>
@@ -564,13 +571,13 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
                     </div>
                     {/* Bottom: line total + stepper */}
                     <div style={{ marginTop:'auto', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8, paddingTop:8 }}>
-                      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:15, color:t.fg }}>
+                      <div style={{ fontFamily:INTER, fontWeight:800, fontSize:15, color:t.fg }}>
                         {fmtNum(item.finalPrice * item.qty)} <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:11, color:t.muted }}>{tr('common.currency')}</span>
                       </div>
                       {/* Glass stepper pill */}
                       <div style={{ display:'flex', alignItems:'center', gap:13, background:t.glassS, backdropFilter:'blur(12px) saturate(160%)', WebkitBackdropFilter:'blur(12px) saturate(160%)', border:`1px solid ${t.glassBd}`, borderRadius:13, padding:'5px 11px' }}>
                         <button onClick={() => decrementItem(item.id)} style={{ width:26, height:26, borderRadius:8, border:`1px solid ${t.line}`, background:'transparent', color:t.fg, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, lineHeight:0 }}>−</button>
-                        <span style={{ fontFamily:SORA, fontWeight:800, fontSize:14, color:t.fg, minWidth:14, textAlign:'center' }}>{item.qty}</span>
+                        <span style={{ fontFamily:INTER, fontWeight:800, fontSize:14, color:t.fg, minWidth:14, textAlign:'center' }}>{item.qty}</span>
                         <button onClick={() => addItem(item)} style={{ width:26, height:26, borderRadius:8, border:'none', background:t.red, color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, lineHeight:0 }}>+</button>
                       </div>
                     </div>
@@ -599,7 +606,7 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
             </div>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', paddingTop:11, borderTop:`1px solid ${t.line}` }}>
               <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:15, color:t.fg }}>{tr('cart.total')}</span>
-              <span style={{ fontFamily:SORA, fontWeight:800, fontSize:21, color:t.fg }}>
+              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:21, color:t.fg }}>
                 {fmtNum(total)} <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.muted }}>{tr('common.currency')}</span>
               </span>
             </div>
@@ -632,7 +639,7 @@ function CheckoutSheet({ t, total, onClose, onSubmit, form, setForm, errors, sub
           <div style={{ width:38, height:4, borderRadius:2, background:t.glassBd }}/>
         </div>
         <div style={{ padding:'4px 20px 14px', borderBottom:`1px solid ${t.glassBd}`, display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontFamily:SORA, fontWeight:700, fontSize:17, color:t.fg }}>{tr('checkout.title')}</span>
+          <span style={{ fontFamily:INTER, fontWeight:700, fontSize:17, color:t.fg }}>{tr('checkout.title')}</span>
           <button onClick={onClose} style={{ width:32, height:32, borderRadius:9, background:t.glass, border:`1px solid ${t.glassBd}`, backdropFilter:'blur(8px)', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
             <ICross s={14} c={t.muted}/>
           </button>
@@ -672,7 +679,7 @@ function CheckoutSheet({ t, total, onClose, onSubmit, form, setForm, errors, sub
             <div style={{ display:'flex', justifyContent:'space-between', fontFamily:MANROPE, fontSize:13, color:t.muted, marginBottom:10 }}><span>{tr('cart.delivery')}</span><span>15 000 {tr('common.currency')}</span></div>
             <div style={{ display:'flex', justifyContent:'space-between', borderTop:`1px solid ${t.glassBd}`, paddingTop:10 }}>
               <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:16, color:t.fg }}>{tr('cart.total')}</span>
-              <span style={{ fontFamily:SORA, fontWeight:800, fontSize:16, color:t.red }}>{fmtNum(total)} {tr('common.currency')}</span>
+              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:16, color:t.red }}>{fmtNum(total)} {tr('common.currency')}</span>
             </div>
           </div>
           <button onClick={onSubmit} disabled={submitting} style={{ width:'100%', background: submitting ? t.muted : t.red, color:'#fff', border:'none', borderRadius:18, padding:15, fontFamily:MANROPE, fontSize:14, fontWeight:700, cursor: submitting ? 'not-allowed' : 'pointer', marginBottom:28, boxShadow: submitting ? 'none' : `0 6px 24px ${t.red}44` }}>
@@ -718,7 +725,7 @@ function CatalogScreen({ t, categories, onSelectCategory }) {
   const topCats = categories.filter(c => !c.parent_id)
   return (
     <div style={{ position:'relative', zIndex:1, padding:'20px 20px 120px' }}>
-      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.catalog')}</div>
+      <div style={{ fontFamily:INTER, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.catalog')}</div>
       {topCats.length === 0 && (
         <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('home.nothing_found')}</div>
       )}
@@ -758,7 +765,7 @@ function FavoritesScreen({ t, liked, onTap, onAdd, onDec, getQty, onLike }) {
 
   return (
     <div style={{ position:'relative', zIndex:1, padding:'20px 20px 120px' }}>
-      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.favorites')}</div>
+      <div style={{ fontFamily:INTER, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.favorites')}</div>
       {loading && (
         <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('common.loading')}</div>
       )}
@@ -766,8 +773,8 @@ function FavoritesScreen({ t, liked, onTap, onAdd, onDec, getQty, onLike }) {
         <div style={{ textAlign:'center', padding:'50px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5 }}>{tr('home.favorites_empty')}</div>
       )}
       <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
-        {favProducts.map(p => (
-          <ProductCard key={p.id} p={p} t={t}
+        {favProducts.map((p, i) => (
+          <ProductCard key={p.id} p={p} t={t} index={i}
             onTap={() => onTap(p)}
             onAdd={() => onAdd(p)}
             onDec={() => onDec(p.id)}
@@ -798,7 +805,7 @@ function ProfileScreen({ t, tgUser, telegramChatId }) {
 
   return (
     <div style={{ position:'relative', zIndex:1, padding:'20px 20px 120px' }}>
-      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.profile')}</div>
+      <div style={{ fontFamily:INTER, fontWeight:800, fontSize:22, color:t.fg, marginBottom:20 }}>{tr('nav.profile')}</div>
 
       {/* Profile card */}
       <div style={{ display:'flex', alignItems:'center', gap:14, background:t.glassS, backdropFilter:'blur(18px) saturate(170%)', WebkitBackdropFilter:'blur(18px) saturate(170%)', border:`1px solid ${t.glassBd}`, borderRadius:22, padding:18, boxShadow:t.shadow, marginBottom:26 }}>
@@ -809,12 +816,12 @@ function ProfileScreen({ t, tgUser, telegramChatId }) {
           }
         </div>
         <div style={{ minWidth:0 }}>
-          <div style={{ fontFamily:SORA, fontWeight:800, fontSize:17, color:t.fg }}>{displayName}</div>
+          <div style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg }}>{displayName}</div>
           {tgUser?.username && <div style={{ fontFamily:MANROPE, fontSize:13, color:t.muted, marginTop:2 }}>@{tgUser.username}</div>}
         </div>
       </div>
 
-      <div style={{ fontFamily:SORA, fontWeight:700, fontSize:17, color:t.fg, marginBottom:14 }}>{tr('profile.orders_title')}</div>
+      <div style={{ fontFamily:INTER, fontWeight:700, fontSize:17, color:t.fg, marginBottom:14 }}>{tr('profile.orders_title')}</div>
 
       {!telegramChatId && (
         <div style={{ textAlign:'center', padding:'40px 20px', color:t.muted, fontFamily:MANROPE, fontSize:13.5, lineHeight:1.65 }}>{tr('profile.no_telegram')}</div>
@@ -845,7 +852,7 @@ function ProfileScreen({ t, tgUser, telegramChatId }) {
             </div>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
               <span style={{ fontFamily:MANROPE, fontSize:12, color:t.muted }}>{tr('profile.items_count', { count: o.items.length })}</span>
-              <span style={{ fontFamily:SORA, fontWeight:800, fontSize:14, color:t.fg }}>{fmtNum(o.total)} {tr('common.currency')}</span>
+              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:14, color:t.fg }}>{fmtNum(o.total)} {tr('common.currency')}</span>
             </div>
           </div>
         ))}
@@ -998,9 +1005,9 @@ export default function Home() {
       <Blobs t={t} />
       <div style={{ position:'relative', zIndex:1, background:t.surface, borderRadius:28, padding:'48px 36px', maxWidth:360, width:'100%', boxShadow:t.shadow, border:`1px solid ${t.line}` }}>
         <div style={{ display:'flex', justifyContent:'center', marginBottom:20 }}><ICheckCircle s={56} c="#22C55E"/></div>
-        <div style={{ fontFamily:SORA, fontSize:24, fontWeight:800, color:t.fg, marginBottom:8 }}>{tr('success.title')}</div>
+        <div style={{ fontFamily:INTER, fontSize:24, fontWeight:800, color:t.fg, marginBottom:8 }}>{tr('success.title')}</div>
         <div style={{ fontFamily:MANROPE, fontSize:12, color:t.muted, marginBottom:8 }}>{tr('success.order_number')}</div>
-        <div style={{ fontFamily:SORA, fontSize:36, fontWeight:800, color:t.red, marginBottom:20 }}>#{success.id}</div>
+        <div style={{ fontFamily:INTER, fontSize:36, fontWeight:800, color:t.red, marginBottom:20 }}>#{success.id}</div>
         <div style={{ color:t.muted, fontFamily:MANROPE, fontSize:13.5, marginBottom:32, lineHeight:1.7 }}>
           {tr('success.delivery_time')}<br/>
           Tel: <strong style={{ color:t.fg }}>{success.phone}</strong>
@@ -1053,7 +1060,7 @@ export default function Home() {
             <SubCategoryRow subs={subCats} active={activeSub} onSelect={setActiveSub} t={t} />
             <div style={{ padding:'12px 20px 20px' }}>
               <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:14 }}>
-                <span style={{ fontFamily:SORA, fontWeight:700, fontSize:19, color:t.fg }}>{tr('home.popular_dishes')}</span>
+                <span style={{ fontFamily:INTER, fontWeight:700, fontSize:19, color:t.fg }}>{tr('home.popular_dishes')}</span>
                 <span onClick={() => handleSelectCat(null)} style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.red, cursor:'pointer' }}>{tr('home.view_all')}</span>
               </div>
               {products.length === 0 && (
@@ -1062,8 +1069,8 @@ export default function Home() {
                 </div>
               )}
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:10 }}>
-                {products.map(p => (
-                  <ProductCard key={p.id} p={p} t={t}
+                {products.map((p, i) => (
+                  <ProductCard key={p.id} p={p} t={t} index={i}
                     onTap={() => setDetail(p)}
                     onAdd={() => handleAdd(p)}
                     onDec={() => decrementItem(p.id)}

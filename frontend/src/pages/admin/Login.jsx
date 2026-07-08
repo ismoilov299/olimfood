@@ -43,8 +43,13 @@ export default function AdminLogin() {
 
       <div style={{ position:'relative', zIndex:1, width:'100%', maxWidth:400 }}>
         <div style={{ textAlign:'center', marginBottom:36 }}>
-          <img src="/logo-oq.png" alt="OlimFood" style={{ height:70, objectFit:'contain', display:'inline-block', marginBottom:10 }} />
-          <div style={{ fontSize:12, color:'#bbb', marginTop:4, fontWeight:600, letterSpacing:.8 }}>{t('admin.login.panel_label')}</div>
+          <img src="/logo-oq.png" alt="OlimFood" style={{ height:70, objectFit:'contain', display:'inline-block' }} />
+          <div className="anim-tagline" style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:12, marginTop:14 }}>
+            <span style={{ width:26, height:2, background:'#E31E24', borderRadius:1, display:'inline-block' }} />
+            <span style={{ fontSize:14, fontWeight:600, letterSpacing:3, color:'#333' }}>{t('header.tagline')}</span>
+            <span style={{ width:26, height:2, background:'#E31E24', borderRadius:1, display:'inline-block' }} />
+          </div>
+          <div style={{ fontSize:12, color:'#bbb', marginTop:10, fontWeight:600, letterSpacing:.8 }}>{t('admin.login.panel_label')}</div>
         </div>
 
         <div style={{

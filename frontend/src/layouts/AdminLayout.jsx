@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import useAuthStore from '../store/authStore'
 import LangSwitcher from '../components/LangSwitcher'
 
-const SORA    = "'Sora', sans-serif"
+const INTER   = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 const MANROPE = "'Manrope', sans-serif"
 
 const IChart    = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -55,6 +55,11 @@ export default function AdminLayout() {
           <div style={{ display:'flex', alignItems:'center', userSelect:'none' }}>
             <img src="/logo-oq.png" alt="OlimFood" style={{ height:34, objectFit:'contain', display:'block' }} />
           </div>
+          <div className="anim-tagline" style={{ display:'flex', alignItems:'center', gap:6, marginTop:6 }}>
+            <span style={{ width:14, height:1.5, background:'#E31E24', display:'inline-block' }} />
+            <span style={{ fontFamily:MANROPE, fontSize:7.5, fontWeight:700, letterSpacing:.8, color:'#8B827B', whiteSpace:'nowrap' }}>{t('header.tagline')}</span>
+            <span style={{ width:14, height:1.5, background:'#E31E24', display:'inline-block' }} />
+          </div>
           <div style={{ fontFamily:MANROPE, fontSize:10, color:'#8B827B', marginTop:5, fontWeight:800, letterSpacing:'.1em' }}>ADMIN PANEL</div>
           <div style={{ marginTop:10 }}>
             <LangSwitcher style={{ background:'rgba(0,0,0,0.04)' }} />
@@ -85,7 +90,7 @@ export default function AdminLayout() {
         {/* User footer */}
         <div style={{ padding:'14px 16px 20px', borderTop:'1px solid rgba(20,16,14,0.07)', display:'flex', alignItems:'center', justifyContent:'space-between', gap:8 }}>
           <div style={{ display:'flex', alignItems:'center', gap:10, minWidth:0 }}>
-            <div style={{ width:36, height:36, borderRadius:11, background:'linear-gradient(135deg,#E5232B,#C01820)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontFamily:SORA, fontSize:15, fontWeight:800, flexShrink:0, boxShadow:'0 3px 10px rgba(229,35,43,.28)' }}>
+            <div style={{ width:36, height:36, borderRadius:11, background:'linear-gradient(135deg,#E5232B,#C01820)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontFamily:INTER, fontSize:15, fontWeight:800, flexShrink:0, boxShadow:'0 3px 10px rgba(229,35,43,.28)' }}>
               {(admin?.username || 'A')[0].toUpperCase()}
             </div>
             <div style={{ minWidth:0 }}>

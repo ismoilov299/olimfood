@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getStats, getOrders } from '../../api'
 
-const SORA    = "'Sora', sans-serif"
+const INTER   = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 const MANROPE = "'Manrope', sans-serif"
 const MONO    = "'Space Mono', monospace"
 
@@ -69,7 +69,7 @@ function StatCard({ Icon, label, value, accent, trend, stableLabel }) {
           : <div style={{ fontFamily:MANROPE, fontSize:11, fontWeight:600, color:'#8B827B', padding:'4px 9px', borderRadius:8, background:'rgba(139,130,123,.08)', border:'1px solid rgba(139,130,123,.14)' }}>{stableLabel}</div>
         }
       </div>
-      <div style={{ fontFamily:SORA, fontWeight:800, fontSize:34, color:'#1A1513', lineHeight:1, marginBottom:6, letterSpacing:'-.02em' }}>{value ?? '—'}</div>
+      <div style={{ fontFamily:INTER, fontWeight:800, fontSize:34, color:'#1A1513', lineHeight:1, marginBottom:6, letterSpacing:'-.02em' }}>{value ?? '—'}</div>
       <div style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12.5, color:'#8B827B' }}>{label}</div>
       <div style={{ position:'absolute', bottom:0, left:0, right:0, height:3, background:`linear-gradient(90deg,${accent},${accent}30)`, borderRadius:'0 0 22px 22px' }} />
     </div>
@@ -104,7 +104,7 @@ export default function Dashboard() {
       <style>{`@keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }`}</style>
 
       <div style={{ marginBottom:32 }}>
-        <div style={{ fontFamily:SORA, fontSize:30, fontWeight:800, color:'#1A1513', letterSpacing:'-.02em', lineHeight:1.1, marginBottom:6 }}>
+        <div style={{ fontFamily:INTER, fontSize:30, fontWeight:800, color:'#1A1513', letterSpacing:'-.02em', lineHeight:1.1, marginBottom:6 }}>
           {t('admin.dashboard.title')}
         </div>
         <div style={{ fontFamily:MANROPE, fontSize:13.5, color:'#8B827B' }}>{weekday}, {datePart}</div>
@@ -128,7 +128,7 @@ export default function Dashboard() {
               <div key={key} style={{ display:'flex', alignItems:'center', gap:7, background:s.bg, border:`1px solid ${s.bd}`, borderRadius:20, padding:'6px 14px' }}>
                 <div style={{ width:7, height:7, borderRadius:'50%', background:s.color }} />
                 <span style={{ fontFamily:MANROPE, fontSize:12, fontWeight:700, color:s.color }}>{t(`status.${key}`)}</span>
-                <span style={{ fontFamily:SORA, fontSize:12, fontWeight:800, color:s.color }}>{count}</span>
+                <span style={{ fontFamily:INTER, fontSize:12, fontWeight:800, color:s.color }}>{count}</span>
               </div>
             )
           })}
@@ -137,7 +137,7 @@ export default function Dashboard() {
 
       <div style={{ background:'rgba(255,255,255,0.88)', backdropFilter:'blur(20px) saturate(180%)', WebkitBackdropFilter:'blur(20px) saturate(180%)', borderRadius:22, border:'1px solid rgba(255,255,255,0.95)', boxShadow:'0 4px 28px rgba(0,0,0,0.06)', overflow:'hidden' }}>
         <div style={{ padding:'20px 24px', borderBottom:'1px solid rgba(20,16,14,0.06)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <div style={{ fontFamily:SORA, fontWeight:700, fontSize:17, color:'#1A1513' }}>{t('admin.dashboard.recent_orders')}</div>
+          <div style={{ fontFamily:INTER, fontWeight:700, fontSize:17, color:'#1A1513' }}>{t('admin.dashboard.recent_orders')}</div>
           <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12.5, color:'#E5232B', cursor:'pointer', letterSpacing:'.01em' }}>{t('admin.dashboard.view_all')} →</span>
         </div>
         <div style={{ overflowX:'auto' }}>
@@ -160,7 +160,7 @@ export default function Dashboard() {
                     <td style={{ padding:'14px 20px', fontFamily:MANROPE, fontWeight:700, fontSize:13.5, color:'#1A1513', whiteSpace:'nowrap' }}>{o.name}</td>
                     <td style={{ padding:'14px 20px', fontFamily:MANROPE, fontSize:13, color:'#8B827B', maxWidth:160, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{o.address || '—'}</td>
                     <td style={{ padding:'14px 20px', whiteSpace:'nowrap' }}>
-                      <span style={{ fontFamily:SORA, fontWeight:800, fontSize:14, color:'#E5232B' }}>{fmtN(o.total)}</span>
+                      <span style={{ fontFamily:INTER, fontWeight:800, fontSize:14, color:'#E5232B' }}>{fmtN(o.total)}</span>
                       {' '}<span style={{ fontFamily:MANROPE, fontSize:11, color:'#8B827B', fontWeight:600 }}>{t('common.currency')}</span>
                     </td>
                     <td style={{ padding:'14px 20px', fontFamily:MANROPE, fontSize:13, color:'#8B827B', textTransform:'capitalize' }}>{o.payment || '—'}</td>

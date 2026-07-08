@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Sora:wght@700;800&family=Manrope:wght@400;500;600;700&family=Space+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&family=Manrope:wght@400;500;600;700&family=Space+Mono&display=swap');
 @import "tailwindcss";
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -25,6 +25,38 @@ html, body, #root {
   padding-bottom: 2px;
 }
 .scroll-x::-webkit-scrollbar { display: none; }
+
+/* Buttons: gentle press feedback everywhere */
+button {
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1);
+}
+button:active {
+  transform: scale(1.04);
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-logo {
+  animation: fadeSlideDown .5s cubic-bezier(.2,.8,.2,1) both;
+}
+.anim-tagline {
+  animation: fadeSlideDown .5s cubic-bezier(.2,.8,.2,1) .18s both;
+}
+
+@keyframes cardRiseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-card {
+  animation: cardRiseIn .45s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:active { transform: none; }
+  .anim-logo, .anim-card, .anim-tagline { animation: none; }
+}
 
 /* Reset — all inline styles handle specifics */
 input, select, textarea {

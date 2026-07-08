@@ -152,7 +152,7 @@ function Blobs({ t }) {
 }
 
 // ─── Header ───────────────────────────────────────────────────────────────────
-function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle }) {
+function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle, cartBtnRef }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const { t: tr } = useTranslation()
   return (
@@ -174,7 +174,7 @@ function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle }) {
         <button onClick={onFavorites} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           <IHeart s={20} c={t.fg} />
         </button>
-        <button onClick={onCartOpen} style={{ position:'relative', width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+        <button ref={cartBtnRef} onClick={onCartOpen} style={{ position:'relative', width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
           <ICart s={21} c={t.fg} />
           {totalItems > 0 && (
             <span style={{ position:'absolute', top:1, right:1, minWidth:17, height:17, padding:'0 4px', background:t.red, color:'#fff', borderRadius:'999px', fontFamily:MANROPE, fontSize:10, fontWeight:800, display:'flex', alignItems:'center', justifyContent:'center', border:`2px solid ${t.surface}` }}>{totalItems}</span>
@@ -368,9 +368,10 @@ function SubCategoryRow({ subs, active, onSelect, t }) {
 }
 
 // ─── ProductCard ──────────────────────────────────────────────────────────────
-function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike, index=0 }) {
+function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike, index=0, onFly }) {
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
   const { t: tr } = useTranslation()
+  const handleAddClick = e => { onFly?.(e.currentTarget, p.image_url); onAdd() }
 
   return (
     <div className="anim-card" onClick={onTap} style={{ animationDelay:`${Math.min(index,10)*40}ms`, background:t.surface, border:`1px solid ${t.line}`, borderRadius:16, overflow:'hidden', boxShadow:'0 2px 10px rgba(20,16,14,.06)', cursor:'pointer' }}>
@@ -410,16 +411,44 @@ function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike, index=0 })
               <div style={{ display:'flex', alignItems:'center', gap:3 }}>
                 <button onClick={onDec} style={{ width:24, height:24, borderRadius:8, border:`1.5px solid ${t.red}44`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IMinus s={11} c={t.red}/></button>
                 <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12, color:t.fg, minWidth:12, textAlign:'center' }}>{qty}</span>
-                <button onClick={onAdd} style={{ width:24, height:24, borderRadius:8, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IPlus s={11} c="#fff"/></button>
+                <button onClick={handleAddClick} style={{ width:24, height:24, borderRadius:8, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IPlus s={11} c="#fff"/></button>
               </div>
             ) : (
-              <button onClick={onAdd} style={{ width:28, height:28, borderRadius:9, border:'none', background:t.red, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+              <button onClick={handleAddClick} style={{ width:28, height:28, borderRadius:9, border:'none', background:t.red, color:'#fff', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
                 <ICart s={13} c="#fff" />
               </button>
             )}
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// ─── Flying-to-cart animation ─────────────────────────────────────────────────
+function FlyingItem({ from, to, image, color, onDone }) {
+  const [landed, setLanded] = useState(false)
+  useEffect(() => {
+    let raf2
+    const raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(() => setLanded(true)) })
+    const timer = setTimeout(onDone, 600)
+    return () => { cancelAnimationFrame(raf1); if (raf2) cancelAnimationFrame(raf2); clearTimeout(timer) }
+  }, [])
+  const size = 30
+  const pos = landed ? to : from
+  return (
+    <div style={{
+      position:'fixed', zIndex:500, pointerEvents:'none',
+      left: pos.x - size/2, top: pos.y - size/2, width:size, height:size,
+      borderRadius:'50%', overflow:'hidden', boxShadow:'0 4px 14px rgba(0,0,0,.3)',
+      background: image ? '#fff' : color,
+      opacity: landed ? 0 : 1,
+      transform: landed ? 'scale(.25)' : 'scale(1)',
+      transition: landed
+        ? 'left .55s cubic-bezier(.3,.1,.3,1), top .55s cubic-bezier(.65,0,.85,.35), transform .55s cubic-bezier(.3,.1,.3,1), opacity .2s ease .38s'
+        : 'none',
+    }}>
+      {image && <img src={image} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />}
     </div>
   )
 }
@@ -752,7 +781,7 @@ function CatalogScreen({ t, categories, onSelectCategory }) {
 }
 
 // ─── Favorites (liked products) ───────────────────────────────────────────────
-function FavoritesScreen({ t, liked, onTap, onAdd, onDec, getQty, onLike }) {
+function FavoritesScreen({ t, liked, onTap, onAdd, onDec, getQty, onLike, onFly }) {
   const { t: tr } = useTranslation()
   const [all,     setAll]     = useState([])
   const [loading, setLoading] = useState(true)
@@ -780,7 +809,8 @@ function FavoritesScreen({ t, liked, onTap, onAdd, onDec, getQty, onLike }) {
             onDec={() => onDec(p.id)}
             qty={getQty(p.id)}
             liked={liked.has(p.id)}
-            onLike={() => onLike(p.id)} />
+            onLike={() => onLike(p.id)}
+            onFly={onFly} />
         ))}
       </div>
     </div>
@@ -903,7 +933,23 @@ export default function Home() {
   const [submitting, setSubmitting]= useState(false)
   const [nav,        setNav]       = useState(0)   // 0 = home, 1 = profile
   const [tgUser,     setTgUser]    = useState(null)
+  const [flights,    setFlights]   = useState([])
   const toastTimer = useRef(null)
+  const cartBtnRef = useRef(null)
+
+  const spawnFly = useCallback((el, image) => {
+    if (!el || !cartBtnRef.current) return
+    const a = el.getBoundingClientRect()
+    const b = cartBtnRef.current.getBoundingClientRect()
+    const id = Date.now() + Math.random()
+    setFlights(f => [...f, {
+      id,
+      from: { x: a.left + a.width/2,  y: a.top + a.height/2 },
+      to:   { x: b.left + b.width/2,  y: b.top + b.height/2 },
+      image,
+    }])
+  }, [])
+  const removeFlight = id => setFlights(f => f.filter(x => x.id !== id))
 
   // Telegram Mini App integration — reads the current user from the WebApp
   // SDK (injected only when opened inside Telegram) and tells Telegram the
@@ -1038,6 +1084,9 @@ export default function Home() {
           form={form} setForm={setForm} errors={errors} submitting={submitting} />
       )}
       <Toast msg={toast.msg} show={toast.show} />
+      {flights.map(f => (
+        <FlyingItem key={f.id} from={f.from} to={f.to} image={f.image} color={t.red} onDone={() => removeFlight(f.id)} />
+      ))}
     </>
   )
 
@@ -1046,11 +1095,11 @@ export default function Home() {
     <div style={{ background:t.bg, minHeight:'100dvh', paddingBottom:100, position:'relative', transition:'background .3s ease' }}>
       <Blobs t={t} />
       <div style={{ position:'relative', zIndex:1 }}>
-        <Header t={t} totalItems={totalItems} onCartOpen={() => setCartOpen(true)} onFavorites={() => handleNavChange(2)} isDark={isDark} onToggle={() => setIsDark(d => !d)} />
+        <Header t={t} totalItems={totalItems} onCartOpen={() => setCartOpen(true)} onFavorites={() => handleNavChange(2)} isDark={isDark} onToggle={() => setIsDark(d => !d)} cartBtnRef={cartBtnRef} />
         {nav === 1 ? (
           <CatalogScreen t={t} categories={categories} onSelectCategory={handleCatalogSelect} />
         ) : nav === 2 ? (
-          <FavoritesScreen t={t} liked={liked} onTap={setDetail} onAdd={handleAdd} onDec={id => decrementItem(id)} getQty={getQty} onLike={toggleLike} />
+          <FavoritesScreen t={t} liked={liked} onTap={setDetail} onAdd={handleAdd} onDec={id => decrementItem(id)} getQty={getQty} onLike={toggleLike} onFly={spawnFly} />
         ) : nav === 4 ? (
           <ProfileScreen t={t} tgUser={tgUser} telegramChatId={telegramChatId} />
         ) : (
@@ -1076,7 +1125,8 @@ export default function Home() {
                     onDec={() => decrementItem(p.id)}
                     qty={getQty(p.id)}
                     liked={liked.has(p.id)}
-                    onLike={() => toggleLike(p.id)} />
+                    onLike={() => toggleLike(p.id)}
+                    onFly={spawnFly} />
                 ))}
               </div>
             </div>
@@ -1087,6 +1137,9 @@ export default function Home() {
       <BottomNav t={t} active={cartOpen ? 3 : nav} onChange={handleNavChange} cartCount={totalItems} />
 
       <Toast msg={toast.msg} show={toast.show} />
+      {flights.map(f => (
+        <FlyingItem key={f.id} from={f.from} to={f.to} image={f.image} color={t.red} onDone={() => removeFlight(f.id)} />
+      ))}
     </div>
   )
 }

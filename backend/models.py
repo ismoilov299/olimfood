@@ -40,6 +40,7 @@ class Product(Base):
     weight_uzl      = Column(String(50), default="")
     weight_ru       = Column(String(50), default="")
     price       = Column(Float, nullable=False)
+    unit        = Column(String(10), default="dona")   # dona | kg
     emoji       = Column(String(10), default="🍽️")
     image_url   = Column(String(500), default="")
     cat_id      = Column(Integer, ForeignKey("categories.id"), nullable=False)
@@ -94,12 +95,31 @@ class Order(Base):
     total      = Column(Float, default=0)
     # Items as JSON array
     items      = Column(JSON, default=list)
+    # Promo
+    promo_code = Column(String(50), default="")
+    discount   = Column(Float, default=0)
     # Telegram integration
     telegram_chat_id = Column(String(50), default="")
     # Status
     status     = Column(String(30), default="new")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class PromoCode(Base):
+    __tablename__ = "promo_codes"
+
+    id             = Column(Integer, primary_key=True, index=True)
+    code           = Column(String(50), unique=True, index=True, nullable=False)
+    discount_type  = Column(String(10), default="percent")  # percent | fixed
+    discount_value = Column(Float, default=0)               # percent (0-100) or so'm amount
+    min_order      = Column(Float, default=0)               # minimum subtotal to qualify
+    max_discount   = Column(Float, default=0)               # cap for percent codes (0 = no cap)
+    usage_limit    = Column(Integer, default=0)             # total redemptions allowed (0 = unlimited)
+    used_count     = Column(Integer, default=0)
+    active         = Column(Boolean, default=True)
+    expires_at     = Column(DateTime(timezone=True), nullable=True)
+    created_at     = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class Setting(Base):

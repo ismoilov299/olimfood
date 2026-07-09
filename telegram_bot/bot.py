@@ -59,7 +59,7 @@ WEBAPP_URL = os.getenv("WEBAPP_URL", "").rstrip("/")
 DELIVERY   = 15_000
 
 # Conversation states
-ASK_NAME, ASK_PHONE, ASK_ADDRESS, ASK_NOTE, ASK_PAYMENT = range(5)
+ASK_NAME, ASK_PHONE, ASK_ADDRESS, ASK_NOTE = range(4)
 
 STATUS_LABELS = {
     "new":        "🆕 Yangi",
@@ -78,7 +78,7 @@ USER_MSGS = {
     "cancelled":  "❌ Buyurtmangiz <b>#{id}</b> bekor qilindi. Kechirasiz.",
 }
 
-PAY_LABELS = {"naqd": "💵 Naqd pul", "karta": "💳 Bank kartasi", "online": "📱 Online"}
+PAY_LABELS = {"naqd": "💵 Naqd pul"}
 
 # ─── i18n ─────────────────────────────────────────────────────────────────────
 _I18N: dict[str, dict[str, str]] = {
@@ -596,34 +596,18 @@ async def got_address(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
 
 async def got_note(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     ctx.user_data["o_note"] = update.message.text.strip()
-    await _ask_payment(update.message)
-    return ASK_PAYMENT
+    return await finish_order(update, ctx, msg=update.message)
 
 
 async def cb_skip_note(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     q = update.callback_query
     await q.answer()
     ctx.user_data["o_note"] = ""
-    await _ask_payment(q.message)
-    return ASK_PAYMENT
+    return await finish_order(update, ctx, msg=q.message)
 
 
-async def _ask_payment(msg):
-    await msg.reply_text(
-        "💳 To'lov usulini tanlang:",
-        reply_markup=InlineKeyboardMarkup([
-            [InlineKeyboardButton("💵 Naqd pul",     callback_data="pay_naqd")],
-            [InlineKeyboardButton("💳 Bank kartasi", callback_data="pay_karta")],
-            [InlineKeyboardButton("📱 Online",        callback_data="pay_online")],
-            [InlineKeyboardButton("❌ Bekor qilish",  callback_data="co_cancel")],
-        ]),
-    )
-
-
-async def finish_order(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
-    q       = update.callback_query
-    await q.answer()
-    payment = q.data[4:]
+async def finish_order(update: Update, ctx: ContextTypes.DEFAULT_TYPE, msg):
+    payment = "naqd"
 
     name    = ctx.user_data.get("o_name", "")
     phone   = ctx.user_data.get("o_phone", "")
@@ -642,7 +626,7 @@ async def finish_order(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         "name": name, "phone": phone, "address": address,
         "note": note, "payment": payment,
         "subtotal": subtotal, "items": items,
-        "chat_id": q.message.chat_id,
+        "chat_id": msg.chat_id,
     })
 
     ctx.user_data["cart"] = []
@@ -653,7 +637,7 @@ async def finish_order(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
     total    = result["total"]
     pay_disp = PAY_LABELS.get(payment, payment)
 
-    await q.message.reply_text(
+    await msg.reply_text(
         f"🎉 <b>Buyurtma qabul qilindi!</b>\n\n"
         f"📦 Buyurtma <b>#{order_id}</b>\n"
         f"💰 Jami: <b>{fmt(total)} so'm</b>\n"
@@ -816,10 +800,6 @@ def main():
             ASK_NOTE: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, got_note),
                 CallbackQueryHandler(cb_skip_note,    pattern="^co_skip_note$"),
-                CallbackQueryHandler(cancel_checkout, pattern="^co_cancel$"),
-            ],
-            ASK_PAYMENT: [
-                CallbackQueryHandler(finish_order,    pattern="^pay_"),
                 CallbackQueryHandler(cancel_checkout, pattern="^co_cancel$"),
             ],
         },

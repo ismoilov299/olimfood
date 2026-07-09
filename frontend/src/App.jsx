@@ -8,6 +8,7 @@ import Products from './pages/admin/Products'
 import Categories from './pages/admin/Categories'
 import Banners from './pages/admin/Banners'
 import Orders from './pages/admin/Orders'
+import Promos from './pages/admin/Promos'
 import Settings from './pages/admin/Settings'
 
 function RequireAuth({ children }) {
@@ -33,6 +34,7 @@ export default function App() {
           <Route path="categories" element={<Categories />} />
           <Route path="banners"    element={<Banners />} />
           <Route path="orders"     element={<Orders />} />
+          <Route path="promos"     element={<Promos />} />
           <Route path="settings"   element={<Settings />} />
         </Route>
 

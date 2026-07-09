@@ -9,7 +9,7 @@ const EMPTY = {
   name_uz:'', name_uzl:'', name_ru:'',
   description_uz:'', description_uzl:'', description_ru:'',
   weight_uz:'', weight_uzl:'', weight_ru:'',
-  price:'', image_url:'', cat_id:'', discount:0, available:true, popular:false,
+  price:'', unit:'dona', image_url:'', cat_id:'', discount:0, available:true, popular:false,
 }
 
 export default function Products() {
@@ -53,7 +53,7 @@ export default function Products() {
       name_uz: p.name_uz||'', name_uzl: p.name_uzl||'', name_ru: p.name_ru||'',
       description_uz: p.description_uz||'', description_uzl: p.description_uzl||'', description_ru: p.description_ru||'',
       weight_uz: p.weight_uz||'', weight_uzl: p.weight_uzl||'', weight_ru: p.weight_ru||'',
-      price: p.price, image_url: p.image_url||'', cat_id: p.cat_id,
+      price: p.price, unit: p.unit||'dona', image_url: p.image_url||'', cat_id: p.cat_id,
       discount: p.discount||0, available: p.available, popular: p.popular,
     })
     setModal(true)
@@ -147,7 +147,10 @@ export default function Products() {
                   </div>
                 </td>
                 <td style={{ padding:'12px 16px', color:'#666' }}>{p.category_emoji} {p.category_name}</td>
-                <td style={{ padding:'12px 16px', fontWeight:700, color:'#111' }}>{fmt(p.price)}</td>
+                <td style={{ padding:'12px 16px', fontWeight:700, color:'#111' }}>
+                  {fmt(p.price)}
+                  <span style={{ fontWeight:600, color:'#aaa' }}> / {t(`admin.products.unit_${p.unit || 'dona'}`)}</span>
+                </td>
                 <td style={{ padding:'12px 16px' }}>
                   {p.discount > 0
                     ? <span style={{ background:'rgba(227,30,36,.08)', color:'#E31E24', borderRadius:20, padding:'2px 9px', fontSize:11, fontWeight:800 }}>-{p.discount}%</span>
@@ -239,12 +242,19 @@ export default function Products() {
                 style={{ ...lightInput, fontSize:12 }} />
             </div>
 
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginBottom:14 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:12, marginBottom:14 }}>
               <div>
                 <label style={labelStyle}>{t('admin.products.field_price')}</label>
                 <input type="number" placeholder="45000" value={form.price}
                   onChange={e => setForm(f => ({ ...f, price: e.target.value }))}
                   style={lightInput} />
+              </div>
+              <div>
+                <label style={labelStyle}>{t('admin.products.field_unit')}</label>
+                <select value={form.unit} onChange={e => setForm(f => ({ ...f, unit: e.target.value }))} style={lightInput}>
+                  <option value="dona">{t('admin.products.unit_dona')}</option>
+                  <option value="kg">{t('admin.products.unit_kg')}</option>
+                </select>
               </div>
               <div>
                 <label style={labelStyle}>{t('admin.products.field_discount')}</label>

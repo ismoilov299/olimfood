@@ -35,14 +35,12 @@
     "view_all": "Barchasi",
     "nothing_found": "Hech narsa topilmadi",
     "popular_badge": "★ Mashhur",
-    "select_size": "Hajmini tanlang",
     "quantity": "Miqdori",
+    "unit_dona": "dona",
+    "unit_kg": "kg",
     "total_price": "Jami narx",
     "add_to_cart": "Savatga qo'shish",
     "added_to_cart": "Savatga qo'shildi",
-    "size_small": "Kichik",
-    "size_medium": "O'rta",
-    "size_large": "Katta",
     "discount": "chegirma",
     "product_image": "MAHSULOT RASMI",
     "dish": "Taom",
@@ -71,10 +69,7 @@
     "ph_name": "Ism va familiya",
     "ph_address": "Ko'cha, uy, xonadon",
     "ph_note": "Qo'shimcha (ixtiyoriy)",
-    "payment_method": "TO'LOV USULI",
     "pay_cash": "Naqd",
-    "pay_card": "Karta",
-    "pay_online": "Online",
     "confirm_btn": "Tasdiqlash",
     "submitting": "Yuborilmoqda...",
     "error": "Xatolik yuz berdi. Qayta urinib ko'ring.",
@@ -115,7 +110,8 @@
       "orders": "Buyurtmalar",
       "settings": "Sozlamalar",
       "role": "Administrator",
-      "logout": "Chiqish"
+      "logout": "Chiqish",
+      "promos": "Promokodlar"
     },
     "dashboard": {
       "title": "Boshqaruv paneli",
@@ -156,6 +152,9 @@
       "field_image": "Mahsulot rasmi",
       "field_price": "Narx (so'm) *",
       "field_discount": "Chegirma %",
+      "field_unit": "O'lchov birligi",
+      "unit_dona": "Donali",
+      "unit_kg": "Kilogrammli",
       "field_category": "Kategoriya *",
       "upload_btn": "Localdan rasm yuklash",
       "change_img": "Boshqa rasm tanlash",
@@ -300,6 +299,35 @@
       "error_too_short": "Parol kamida 4 ta belgi",
       "success_changed": "Parol muvaffaqiyatli o'zgartirildi",
       "error_generic": "Xatolik yuz berdi"
+    },
+    "promos": {
+      "title": "Promokodlar",
+      "new_btn": "+ Yangi promokod",
+      "no_promos": "Promokodlar yo'q",
+      "modal_new": "Yangi promokod",
+      "modal_edit": "Promokodni tahrirlash",
+      "field_code": "Promokod",
+      "field_type": "Chegirma turi",
+      "type_percent": "Foiz (%)",
+      "type_fixed": "Summa (so'm)",
+      "field_value_pct": "Chegirma (%)",
+      "field_value_sum": "Chegirma (so'm)",
+      "field_max_discount": "Maks. chegirma (so'm)",
+      "field_min_order": "Min. buyurtma (so'm)",
+      "field_usage_limit": "Ishlatish limiti",
+      "field_expires": "Amal qilish muddati",
+      "check_active": "Faol",
+      "min_order": "Min. buyurtma",
+      "max_discount": "Maks. chegirma",
+      "used": "Ishlatildi",
+      "until": "Muddat",
+      "expired": "Muddati tugagan",
+      "limit_reached": "Limit tugagan",
+      "toast_code_required": "❌ Promokod kiritilmadi",
+      "toast_added": "✅ Qo'shildi",
+      "toast_updated": "✅ Yangilandi",
+      "toast_deleted": "🗑️ O'chirildi",
+      "confirm_delete": "Promokodni o'chirasizmi?"
     }
   },
   "profile": {
@@ -313,5 +341,13 @@
     "dark_mode": "Tungi rejim",
     "light_mode": "Kunduzgi rejim",
     "tagline": "ONE BRAND. MANY POSSIBILITIES."
+  },
+  "promo": {
+    "discount": "Chegirma",
+    "remove": "Olib tashlash",
+    "err_invalid": "Promokod noto'g'ri",
+    "err_expired": "Promokod muddati tugagan",
+    "err_limit": "Promokod limiti tugagan",
+    "err_min_order": "Buyurtma summasi yetarli emas"
   }
 }

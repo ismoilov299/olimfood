@@ -60,6 +60,7 @@ class ProductBase(BaseModel):
     weight_uzl: str = ""
     weight_ru: str = ""
     price: float
+    unit: str = "dona"          # dona | kg
     emoji: str = "🍽️"
     image_url: str = ""
     cat_id: int
@@ -81,6 +82,7 @@ class ProductUpdate(BaseModel):
     weight_uzl: Optional[str] = None
     weight_ru: Optional[str] = None
     price: Optional[float] = None
+    unit: Optional[str] = None
     emoji: Optional[str] = None
     image_url: Optional[str] = None
     cat_id: Optional[int] = None
@@ -154,7 +156,7 @@ class OrderItem(BaseModel):
     product_id: int
     name: str
     price: float
-    qty: int
+    qty: float
     emoji: str = ""
 
 class OrderCreate(BaseModel):
@@ -168,6 +170,7 @@ class OrderCreate(BaseModel):
     total: float
     items: List[OrderItem]
     telegram_chat_id: str = ""
+    promo_code: str = ""
 
 class OrderStatusUpdate(BaseModel):
     status: str
@@ -181,6 +184,8 @@ class OrderOut(BaseModel):
     payment: str
     subtotal: float
     delivery: float
+    discount: float = 0
+    promo_code: str = ""
     total: float
     items: List[Any]
     status: str
@@ -190,6 +195,48 @@ class OrderOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+# ── Promo codes ─────────────────────────────────
+class PromoCodeBase(BaseModel):
+    code: str
+    discount_type: str = "percent"          # percent | fixed
+    discount_value: float = 0
+    min_order: float = 0
+    max_discount: float = 0
+    usage_limit: int = 0
+    active: bool = True
+    expires_at: Optional[datetime] = None
+
+class PromoCodeCreate(PromoCodeBase):
+    pass
+
+class PromoCodeUpdate(BaseModel):
+    code: Optional[str] = None
+    discount_type: Optional[str] = None
+    discount_value: Optional[float] = None
+    min_order: Optional[float] = None
+    max_discount: Optional[float] = None
+    usage_limit: Optional[int] = None
+    active: Optional[bool] = None
+    expires_at: Optional[datetime] = None
+
+class PromoCodeOut(PromoCodeBase):
+    id: int
+    used_count: int = 0
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class PromoValidateOut(BaseModel):
+    valid: bool
+    reason: str = ""            # error code when invalid
+    code: str = ""
+    discount_type: str = ""
+    discount_value: float = 0
+    discount: float = 0         # actual so'm discount for the given subtotal
+    min_order: float = 0
 
 
 # ── Stats ────────────────────────────────────────

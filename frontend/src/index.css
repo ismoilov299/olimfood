@@ -34,15 +34,12 @@ button:active {
   transform: scale(1.04);
 }
 
-@keyframes fadeSlideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes logoApproach {
+  from { opacity: 0; transform: scale(.55); }
+  to   { opacity: 1; transform: scale(1); }
 }
 .anim-logo {
-  animation: fadeSlideDown .5s cubic-bezier(.2,.8,.2,1) both;
-}
-.anim-tagline {
-  animation: fadeSlideDown .5s cubic-bezier(.2,.8,.2,1) .18s both;
+  animation: logoApproach 2.5s cubic-bezier(.16,.6,.15,1) both;
 }
 
 @keyframes cardRiseIn {
@@ -70,7 +67,7 @@ button:active {
 
 @media (prefers-reduced-motion: reduce) {
   button:active { transform: none; }
-  .anim-logo, .anim-card, .anim-tagline, .anim-lightbox, .anim-lightbox-img { animation: none; }
+  .anim-logo, .anim-card, .anim-lightbox, .anim-lightbox-img { animation: none; }
 }
 
 /* Reset — all inline styles handle specifics */

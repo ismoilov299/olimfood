@@ -163,14 +163,7 @@ function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle, cart
         <IMenu s={22} c={t.fg} />
       </button>
 
-      <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
-        <img className="anim-logo" src={isDark ? '/logo-oq-dark.png' : '/logo-oq.png'} alt="OlimFood" style={{ height:32, objectFit:'contain', display:'block' }} />
-        <div className="anim-tagline" style={{ display:'flex', alignItems:'center', gap:5, marginTop:3 }}>
-          <span style={{ width:11, height:1.5, background:t.red, display:'inline-block' }} />
-          <span style={{ fontFamily:MANROPE, fontSize:6.5, fontWeight:700, letterSpacing:.8, color:t.muted, whiteSpace:'nowrap' }}>{tr('header.tagline')}</span>
-          <span style={{ width:11, height:1.5, background:t.red, display:'inline-block' }} />
-        </div>
-      </div>
+      <img className="anim-logo" src={isDark ? '/logo-oq-dark.png' : '/logo-oq.png'} alt="OlimFood" style={{ height:32, objectFit:'contain', display:'block' }} />
 
       <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
         <button onClick={onFavorites} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>

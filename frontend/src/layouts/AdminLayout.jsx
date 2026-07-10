@@ -55,11 +55,6 @@ export default function AdminLayout() {
           <div style={{ display:'flex', alignItems:'center', userSelect:'none' }}>
             <img src="/logo-oq.png" alt="OlimFood" style={{ height:34, objectFit:'contain', display:'block' }} />
           </div>
-          <div className="anim-tagline" style={{ display:'flex', alignItems:'center', gap:6, marginTop:6 }}>
-            <span style={{ width:14, height:1.5, background:'#E31E24', display:'inline-block' }} />
-            <span style={{ fontFamily:MANROPE, fontSize:7.5, fontWeight:700, letterSpacing:.8, color:'#8B827B', whiteSpace:'nowrap' }}>{t('header.tagline')}</span>
-            <span style={{ width:14, height:1.5, background:'#E31E24', display:'inline-block' }} />
-          </div>
           <div style={{ fontFamily:MANROPE, fontSize:10, color:'#8B827B', marginTop:5, fontWeight:800, letterSpacing:'.1em' }}>ADMIN PANEL</div>
           <div style={{ marginTop:10 }}>
             <LangSwitcher style={{ background:'rgba(0,0,0,0.04)' }} />

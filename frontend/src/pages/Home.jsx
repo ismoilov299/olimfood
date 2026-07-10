@@ -459,6 +459,7 @@ function FlyingItem({ from, to, image, color, onDone }) {
 function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
   const step = qtyStep(p.unit)
   const [qty, setQty] = useState(step)
+  const [imgFull, setImgFull] = useState(false)
   const { t: tr } = useTranslation()
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
   const rating = p.popular ? '4.9' : '4.7'
@@ -469,7 +470,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
       <div style={{ position:'relative', zIndex:1 }}>
         {/* Hero — 330px */}
         <div style={{ position:'relative', height:330, background:'repeating-linear-gradient(135deg, #ECE8E3 0, #ECE8E3 12px, #F5F2EE 12px, #F5F2EE 24px)', display:'flex', alignItems:'center', justifyContent:'center', overflow:'hidden' }}>
-          {p.image_url && <img src={p.image_url} alt={p.name} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block' }} />}
+          {p.image_url && <img src={p.image_url} alt={p.name} onClick={() => setImgFull(true)} style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', display:'block', cursor:'pointer' }} />}
           {!p.image_url && <span style={{ fontFamily:MONO, fontSize:11, letterSpacing:'.14em', color:t.muted, opacity:.6 }}>{tr('home.product_image')}</span>}
           {/* back — top:54px */}
           <button onClick={onClose} style={{ position:'absolute', top:54, left:20, width:44, height:44, borderRadius:14, border:`1px solid ${t.glassBd}`, background:t.glassS, backdropFilter:'blur(16px) saturate(170%)', WebkitBackdropFilter:'blur(16px) saturate(170%)', boxShadow:t.shadow, display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
@@ -527,6 +528,18 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
           <ICart s={19} c="#fff" /> {tr('home.add_to_cart')}
         </button>
       </div>
+
+      {/* Fullscreen image viewer — tap the hero photo to open, tap anywhere to close */}
+      {imgFull && p.image_url && (
+        <div className="anim-lightbox" onClick={() => setImgFull(false)}
+          style={{ position:'fixed', inset:0, zIndex:600, background:'rgba(6,4,3,.97)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'zoom-out' }}>
+          <button onClick={() => setImgFull(false)} style={{ position:'absolute', top:54, right:20, width:44, height:44, borderRadius:14, border:'1px solid rgba(255,255,255,.18)', background:'rgba(255,255,255,.1)', backdropFilter:'blur(16px) saturate(170%)', WebkitBackdropFilter:'blur(16px) saturate(170%)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+            <ICross s={18} c="#fff" />
+          </button>
+          <img src={p.image_url} alt={p.name} className="anim-lightbox-img"
+            style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain', display:'block' }} />
+        </div>
+      )}
     </div>
   )
 }

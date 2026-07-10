@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getCategories, getProducts, getBanners, createOrder, getSetting, getMyOrders } from '../api'
+import { getCategories, getProducts, getBanners, createOrder, getSetting, getMyOrders, validatePromo } from '../api'
 import useCartStore from '../store/cartStore'
 import LangSwitcher from '../components/LangSwitcher'
 
@@ -41,6 +41,8 @@ const THEMES = {
 }
 
 const fmtNum = n => n ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0'
+const qtyStep  = unit => unit === 'kg' ? 0.5 : 1
+const fmtQty   = (qty, unit) => unit === 'kg' ? (Math.round(qty*10)/10).toFixed(1) : String(qty)
 const INTER   = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 const MANROPE = "'Manrope', sans-serif"
 const MONO    = "'Space Mono', monospace"
@@ -403,7 +405,7 @@ function ProductCard({ p, t, onTap, onAdd, onDec, qty, liked, onLike, index=0, o
             {qty > 0 ? (
               <div style={{ display:'flex', alignItems:'center', gap:3 }}>
                 <button onClick={onDec} style={{ width:24, height:24, borderRadius:8, border:`1.5px solid ${t.red}44`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IMinus s={11} c={t.red}/></button>
-                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12, color:t.fg, minWidth:12, textAlign:'center' }}>{qty}</span>
+                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12, color:t.fg, minWidth:20, textAlign:'center' }}>{fmtQty(qty, p.unit)}</span>
                 <button onClick={handleAddClick} style={{ width:24, height:24, borderRadius:8, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}><IPlus s={11} c="#fff"/></button>
               </div>
             ) : (
@@ -448,17 +450,11 @@ function FlyingItem({ from, to, image, color, onDone }) {
 
 // ─── Product Detail ───────────────────────────────────────────────────────────
 function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
-  const [size, setSize] = useState('md')
-  const [qty,  setQty]  = useState(1)
+  const step = qtyStep(p.unit)
+  const [qty, setQty] = useState(step)
   const { t: tr } = useTranslation()
-  const SIZES = [
-    { id:'sm', name: tr('home.size_small') },
-    { id:'md', name: tr('home.size_medium') },
-    { id:'lg', name: tr('home.size_large') },
-  ]
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
   const rating = p.popular ? '4.9' : '4.7'
-  const isDark = t === THEMES.dark
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:400, background:t.bg, overflowY:'auto', fontFamily:MANROPE }}>
@@ -497,25 +493,14 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
             </div>
           </div>
           {p.description && <p style={{ fontFamily:MANROPE, fontWeight:400, fontSize:14, lineHeight:1.65, color:t.muted, margin:'16px 0 4px' }}>{p.description}</p>}
-          <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg, margin:'22px 0 12px' }}>{tr('home.select_size')}</div>
-          <div style={{ display:'flex', gap:10 }}>
-            {SIZES.map(sz => {
-              const on = size === sz.id
-              return (
-                <button key={sz.id} onClick={() => setSize(sz.id)} style={{ flex:1, padding:'14px 0', borderRadius:14, cursor:'pointer', fontFamily:MANROPE, fontWeight:700, fontSize:14, textAlign:'center', border: on ? `1.5px solid ${t.red}` : `1px solid ${t.line}`, background: on ? (isDark ? 'rgba(255,45,45,.14)' : 'rgba(229,35,43,.06)') : 'transparent', color: on ? t.red : t.fg }}>
-                  {sz.name}
-                </button>
-              )
-            })}
-          </div>
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:26 }}>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:22 }}>
             <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg }}>{tr('home.quantity')}</span>
             <div style={{ display:'flex', alignItems:'center', gap:18, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px solid ${t.glassBd}`, borderRadius:16, padding:'8px 14px' }}>
-              <button onClick={() => setQty(q => Math.max(1, q-1))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <button onClick={() => setQty(q => Math.max(step, Math.round((q-step)*100)/100))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IMinus s={15} c={t.fg} />
               </button>
-              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg, minWidth:18, textAlign:'center' }}>{qty}</span>
-              <button onClick={() => setQty(q => q+1)} style={{ width:30, height:30, borderRadius:10, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg, minWidth:44, textAlign:'center' }}>{fmtQty(qty, p.unit)} {tr(`home.unit_${p.unit === 'kg' ? 'kg' : 'dona'}`)}</span>
+              <button onClick={() => setQty(q => Math.round((q+step)*100)/100)} style={{ width:30, height:30, borderRadius:10, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IPlus s={15} c="#fff" />
               </button>
             </div>
@@ -540,8 +525,9 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
 }
 
 // ─── Cart Screen (full page — spec-exact) ────────────────────────────────────
-function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, onCheckout, addItem, decrementItem, removeItem }) {
+function CartScreen({ t, items, totalItems, subtotal, delivery, total, discount, promo, promoError, onApplyPromo, onRemovePromo, onClose, onCheckout, addItem, decrementItem, removeItem }) {
   const { t: tr } = useTranslation()
+  const [code, setCode] = useState('')
   return (
     <div style={{ position:'fixed', inset:0, zIndex:200, background:t.bg, display:'flex', flexDirection:'column', transition:'background .3s' }}>
       <Blobs t={t} />
@@ -599,7 +585,7 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
                       {/* Glass stepper pill */}
                       <div style={{ display:'flex', alignItems:'center', gap:13, background:t.glassS, backdropFilter:'blur(12px) saturate(160%)', WebkitBackdropFilter:'blur(12px) saturate(160%)', border:`1px solid ${t.glassBd}`, borderRadius:13, padding:'5px 11px' }}>
                         <button onClick={() => decrementItem(item.id)} style={{ width:26, height:26, borderRadius:8, border:`1px solid ${t.line}`, background:'transparent', color:t.fg, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, lineHeight:0 }}>−</button>
-                        <span style={{ fontFamily:INTER, fontWeight:800, fontSize:14, color:t.fg, minWidth:14, textAlign:'center' }}>{item.qty}</span>
+                        <span style={{ fontFamily:INTER, fontWeight:800, fontSize:14, color:t.fg, minWidth:24, textAlign:'center' }}>{fmtQty(item.qty, item.unit)}</span>
                         <button onClick={() => addItem(item)} style={{ width:26, height:26, borderRadius:8, border:'none', background:t.red, color:'#fff', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, lineHeight:0 }}>+</button>
                       </div>
                     </div>
@@ -609,11 +595,28 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
             </div>
 
             {/* Promo code */}
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:16, padding:'13px 15px', background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px dashed ${t.glassBd}`, borderRadius:16 }}>
-              <ITag s={19} c={t.red} />
-              <input placeholder={tr('cart.promo_placeholder')} style={{ flex:1, border:'none', outline:'none', background:'transparent', fontFamily:MANROPE, fontWeight:500, fontSize:14, color:t.fg }} />
-              <button style={{ border:'none', background:'transparent', color:t.red, fontFamily:MANROPE, fontSize:13, fontWeight:700, cursor:'pointer' }}>{tr('cart.promo_apply')}</button>
-            </div>
+            {promo ? (
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:16, padding:'13px 15px', background:`${t.red}12`, border:`1px solid ${t.red}44`, borderRadius:16 }}>
+                <ITag s={19} c={t.red} />
+                <div style={{ flex:1, minWidth:0 }}>
+                  <div style={{ fontFamily:MANROPE, fontWeight:800, fontSize:14, color:t.fg }}>{promo.code}</div>
+                  <div style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.red }}>−{fmtNum(discount)} {tr('common.currency')}</div>
+                </div>
+                <button onClick={onRemovePromo} style={{ border:'none', background:'transparent', color:t.muted, fontFamily:MANROPE, fontSize:13, fontWeight:700, cursor:'pointer' }}>{tr('promo.remove')}</button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display:'flex', alignItems:'center', gap:10, marginTop:16, padding:'13px 15px', background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px dashed ${t.glassBd}`, borderRadius:16 }}>
+                  <ITag s={19} c={t.red} />
+                  <input value={code} onChange={e => setCode(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') onApplyPromo(code) }}
+                    placeholder={tr('cart.promo_placeholder')}
+                    style={{ flex:1, border:'none', outline:'none', background:'transparent', fontFamily:MANROPE, fontWeight:500, fontSize:14, color:t.fg, textTransform:'uppercase' }} />
+                  <button onClick={() => onApplyPromo(code)} style={{ border:'none', background:'transparent', color:t.red, fontFamily:MANROPE, fontSize:13, fontWeight:700, cursor:'pointer' }}>{tr('cart.promo_apply')}</button>
+                </div>
+                {promoError && <div style={{ marginTop:7, marginLeft:4, fontFamily:MANROPE, fontWeight:600, fontSize:12, color:'#E5484D' }}>{promoError}</div>}
+              </>
+            )}
           </div>
 
           {/* Checkout bar — anchored to bottom */}
@@ -622,6 +625,12 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
               <span style={{ fontFamily:MANROPE, fontWeight:500, fontSize:13, color:t.muted }}>{tr('cart.subtotal')}</span>
               <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.fg }}>{fmtNum(subtotal)} {tr('common.currency')}</span>
             </div>
+            {discount > 0 && (
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:6 }}>
+                <span style={{ fontFamily:MANROPE, fontWeight:500, fontSize:13, color:t.red }}>{tr('promo.discount')}{promo?.code ? ` · ${promo.code}` : ''}</span>
+                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:13, color:t.red }}>−{fmtNum(discount)} {tr('common.currency')}</span>
+              </div>
+            )}
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:11 }}>
               <span style={{ fontFamily:MANROPE, fontWeight:500, fontSize:13, color:t.muted }}>{tr('cart.delivery')}</span>
               <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:13, color:t.fg }}>{fmtNum(delivery)} {tr('common.currency')}</span>
@@ -644,13 +653,8 @@ function CartScreen({ t, items, totalItems, subtotal, delivery, total, onClose, 
 }
 
 // ─── Checkout Sheet ───────────────────────────────────────────────────────────
-function CheckoutSheet({ t, total, onClose, onSubmit, form, setForm, errors, submitting }) {
+function CheckoutSheet({ t, subtotal, delivery, discount, promo, total, onClose, onSubmit, form, setForm, errors, submitting }) {
   const { t: tr } = useTranslation()
-  const PAY = [
-    { key:'naqd',   label: tr('checkout.pay_cash') },
-    { key:'karta',  label: tr('checkout.pay_card') },
-    { key:'online', label: tr('checkout.pay_online') },
-  ]
   return (
     <div style={{ position:'fixed', inset:0, zIndex:300, background:'rgba(10,8,7,0.22)', backdropFilter:'blur(3px)' }} onClick={onClose}>
       <div onClick={e => e.stopPropagation()} style={{ position:'absolute', bottom:0, left:0, right:0, background:t.glass, backdropFilter:'blur(44px) saturate(240%)', WebkitBackdropFilter:'blur(44px) saturate(240%)', borderTop:`1.5px solid ${t.glassBd}`, borderRadius:'28px 28px 0 0', maxHeight:'92dvh', boxShadow:'0 -20px 70px rgba(0,0,0,.18)', overflow:'hidden' }}>
@@ -684,21 +688,13 @@ function CheckoutSheet({ t, total, onClose, onSubmit, form, setForm, errors, sub
               {errors[key] && <div style={{ fontFamily:MANROPE, fontSize:11, color:t.red, marginTop:5 }}>{errors[key]}</div>}
             </div>
           ))}
-          <div style={{ marginBottom:18 }}>
-            <label style={{ fontFamily:MANROPE, fontSize:10.5, color:t.muted, fontWeight:700, display:'block', marginBottom:8, letterSpacing:'.8px' }}>{tr('checkout.payment_method')}</label>
-            <div style={{ display:'flex', gap:8 }}>
-              {PAY.map(({ key, label }) => (
-                <button key={key} onClick={() => setForm(f => ({ ...f, payment:key }))}
-                  style={{ flex:1, padding:'12px 6px', borderRadius:12, cursor:'pointer', border: form.payment===key ? `1.5px solid ${t.red}` : `1px solid ${t.glassBd}`, background: form.payment===key ? `${t.red}14` : t.glass, backdropFilter:'blur(8px)', color: form.payment===key ? t.red : t.muted, fontFamily:MANROPE, fontSize:13, fontWeight:600, transition:'all .2s' }}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
           {/* price summary — glass card */}
           <div style={{ background:t.glass, backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', border:`1px solid ${t.glassBd}`, borderRadius:16, padding:'14px 16px', marginBottom:18 }}>
-            <div style={{ display:'flex', justifyContent:'space-between', fontFamily:MANROPE, fontSize:13, color:t.muted, marginBottom:6 }}><span>{tr('cart.subtotal')}</span><span>{fmtNum(total-15000)} {tr('common.currency')}</span></div>
-            <div style={{ display:'flex', justifyContent:'space-between', fontFamily:MANROPE, fontSize:13, color:t.muted, marginBottom:10 }}><span>{tr('cart.delivery')}</span><span>15 000 {tr('common.currency')}</span></div>
+            <div style={{ display:'flex', justifyContent:'space-between', fontFamily:MANROPE, fontSize:13, color:t.muted, marginBottom:6 }}><span>{tr('cart.subtotal')}</span><span>{fmtNum(subtotal)} {tr('common.currency')}</span></div>
+            {discount > 0 && (
+              <div style={{ display:'flex', justifyContent:'space-between', fontFamily:MANROPE, fontSize:13, color:t.red, fontWeight:700, marginBottom:6 }}><span>{tr('promo.discount')}{promo?.code ? ` · ${promo.code}` : ''}</span><span>−{fmtNum(discount)} {tr('common.currency')}</span></div>
+            )}
+            <div style={{ display:'flex', justifyContent:'space-between', fontFamily:MANROPE, fontSize:13, color:t.muted, marginBottom:10 }}><span>{tr('cart.delivery')}</span><span>{fmtNum(delivery)} {tr('common.currency')}</span></div>
             <div style={{ display:'flex', justifyContent:'space-between', borderTop:`1px solid ${t.glassBd}`, paddingTop:10 }}>
               <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:16, color:t.fg }}>{tr('cart.total')}</span>
               <span style={{ fontFamily:INTER, fontWeight:800, fontSize:16, color:t.red }}>{fmtNum(total)} {tr('common.currency')}</span>
@@ -914,7 +910,7 @@ export default function Home() {
   const [banners,    setBanners]   = useState([])
   const [allCatImg,  setAllCatImg] = useState('')
   const [activeCat,  setActiveCat] = useState(null)
-  const [activeSub,  setActiveSub] = useState(null)
+  const [subPath,    setSubPath]   = useState([])   // drill-down chain of selected sub-category ids — supports any nesting depth
   const [detail,     setDetail]    = useState(null)
   const [cartOpen,   setCartOpen]  = useState(false)
   const [checkout,   setCheckout]  = useState(false)
@@ -960,12 +956,65 @@ export default function Home() {
   const totalItems = items.reduce((s, i) => s + i.qty, 0)
   const subtotal   = items.reduce((s, i) => s + i.finalPrice * i.qty, 0)
   const delivery   = 15000
-  const total      = subtotal + delivery
+
+  // Promo code — validated against the backend; server re-checks at order time.
+  const [promo, setPromo]         = useState(null)  // { code, discount } when applied
+  const [promoError, setPromoError] = useState('')
+  const discount = Math.min(promo?.discount || 0, subtotal)
+  const total    = Math.max(0, subtotal - discount) + delivery
+
+  const applyPromo = async (code) => {
+    const c = (code || '').trim()
+    if (!c) return
+    setPromoError('')
+    try {
+      const { data } = await validatePromo(c, subtotal)
+      if (data.valid) { setPromo({ code: data.code, discount: data.discount }); setPromoError('') }
+      else { setPromo(null); setPromoError(tr(`promo.err_${data.reason}`) || tr('promo.err_invalid')) }
+    } catch { setPromo(null); setPromoError(tr('promo.err_invalid')) }
+  }
+  const removePromo = () => { setPromo(null); setPromoError('') }
+
+  // Re-validate a live promo when the cart subtotal changes (min_order / percent).
+  useEffect(() => {
+    if (!promo?.code) return
+    validatePromo(promo.code, subtotal)
+      .then(({ data }) => {
+        if (data.valid) setPromo(p => p ? { ...p, discount: data.discount } : p)
+        else { setPromo(null); setPromoError(tr(`promo.err_${data.reason}`) || tr('promo.err_invalid')) }
+      })
+      .catch(() => {})
+  }, [subtotal]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const topCats = categories.filter(c => !c.parent_id)
-  const subCats = activeCat ? categories.filter(c => c.parent_id === activeCat) : []
 
-  const handleSelectCat = (id) => { setActiveCat(id); setActiveSub(null) }
+  // One row per nesting level: children of activeCat, then (once one of
+  // those is picked) its children, and so on for as deep as the admin has
+  // nested categories — mirrors the admin panel's unlimited category tree.
+  const subCatLevels = useMemo(() => {
+    const levels = []
+    let parentId = activeCat
+    let depth = 0
+    while (parentId) {
+      const subs = categories.filter(c => c.parent_id === parentId)
+      if (!subs.length) break
+      const active = subPath[depth] ?? null
+      levels.push({ depth, subs, active })
+      if (!active) break
+      parentId = active
+      depth++
+    }
+    return levels
+  }, [categories, activeCat, subPath])
+
+  const handleSelectCat = (id) => { setActiveCat(id); setSubPath([]) }
+  const handleSelectSubAt = (depth, id) => {
+    setSubPath(prev => {
+      const next = prev.slice(0, depth)
+      if (id) next.push(id)
+      return next
+    })
+  }
 
   // Bottom nav: 0=Home 1=Catalog 2=Favorites 3=Cart(overlay) 4=Profile
   const handleNavChange = (i) => {
@@ -986,10 +1035,10 @@ export default function Home() {
 
   useEffect(() => {
     const params = { available:true, lang: i18n.language }
-    const catFilter = activeSub || activeCat
+    const catFilter = subPath.length ? subPath[subPath.length - 1] : activeCat
     if (catFilter) params.cat_id = catFilter
     getProducts(params).then(r => setProducts(r.data))
-  }, [activeCat, activeSub, i18n.language])
+  }, [activeCat, subPath, i18n.language])
 
   const showToast = msg => {
     clearTimeout(toastTimer.current)
@@ -1009,8 +1058,8 @@ export default function Home() {
     }
   }
 
-  const handleAdd = (product, qty=1) => {
-    for (let i=0; i<qty; i++) addItem(product)
+  const handleAdd = (product, qty) => {
+    addItem(product, qty)
     showToast(tr('home.added_to_cart'))
   }
 
@@ -1032,8 +1081,8 @@ export default function Home() {
     if (!validateForm()) return
     setSubmitting(true)
     try {
-      const res = await createOrder({ ...form, subtotal, delivery, total, telegram_chat_id: telegramChatId, items: items.map(i => ({ product_id:i.id, name:i.name, price:i.finalPrice, qty:i.qty, emoji:'' })) })
-      clearCart(); setCheckout(false); setCartOpen(false); setSuccess(res.data)
+      const res = await createOrder({ ...form, subtotal, delivery, total, telegram_chat_id: telegramChatId, promo_code: promo?.code || '', items: items.map(i => ({ product_id:i.id, name:i.name, price:i.finalPrice, qty:i.qty, emoji:'' })) })
+      clearCart(); setPromo(null); setPromoError(''); setCheckout(false); setCartOpen(false); setSuccess(res.data)
     } catch { showToast(tr('checkout.error')) }
     finally { setSubmitting(false) }
   }
@@ -1069,11 +1118,12 @@ export default function Home() {
   if (cartOpen) return (
     <>
       <CartScreen t={t} items={items} totalItems={totalItems} subtotal={subtotal} delivery={delivery} total={total}
+        discount={discount} promo={promo} promoError={promoError} onApplyPromo={applyPromo} onRemovePromo={removePromo}
         onClose={() => setCartOpen(false)}
         onCheckout={() => setCheckout(true)}
         addItem={addItem} decrementItem={decrementItem} removeItem={removeItem} />
       {checkout && (
-        <CheckoutSheet t={t} total={total} onClose={() => setCheckout(false)} onSubmit={handleCheckout}
+        <CheckoutSheet t={t} subtotal={subtotal} delivery={delivery} discount={discount} promo={promo} total={total} onClose={() => setCheckout(false)} onSubmit={handleCheckout}
           form={form} setForm={setForm} errors={errors} submitting={submitting} />
       )}
       <Toast msg={toast.msg} show={toast.show} />
@@ -1099,7 +1149,9 @@ export default function Home() {
           <>
             <BannerCarousel banners={banners} t={t} onCta={handleBannerCta} />
             <CategoryScroll categories={topCats} active={activeCat} onSelect={handleSelectCat} t={t} allImage={allCatImg} onViewAll={() => setNav(1)} />
-            <SubCategoryRow subs={subCats} active={activeSub} onSelect={setActiveSub} t={t} />
+            {subCatLevels.map(lvl => (
+              <SubCategoryRow key={lvl.depth} subs={lvl.subs} active={lvl.active} onSelect={id => handleSelectSubAt(lvl.depth, id)} t={t} />
+            ))}
             <div style={{ padding:'12px 20px 20px' }}>
               <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:14 }}>
                 <span style={{ fontFamily:INTER, fontWeight:700, fontSize:19, color:t.fg }}>{tr('home.popular_dishes')}</span>

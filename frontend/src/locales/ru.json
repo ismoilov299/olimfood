@@ -35,14 +35,12 @@
     "view_all": "Все",
     "nothing_found": "Ничего не найдено",
     "popular_badge": "★ Популярное",
-    "select_size": "Выберите размер",
     "quantity": "Количество",
+    "unit_dona": "шт",
+    "unit_kg": "кг",
     "total_price": "Итого",
     "add_to_cart": "В корзину",
     "added_to_cart": "Добавлено в корзину",
-    "size_small": "Маленький",
-    "size_medium": "Средний",
-    "size_large": "Большой",
     "discount": "скидка",
     "product_image": "ФОТО ТОВАРА",
     "dish": "Блюдо",
@@ -71,10 +69,7 @@
     "ph_name": "Имя и фамилия",
     "ph_address": "Улица, дом, квартира",
     "ph_note": "Дополнительно (необязательно)",
-    "payment_method": "СПОСОБ ОПЛАТЫ",
     "pay_cash": "Наличные",
-    "pay_card": "Карта",
-    "pay_online": "Онлайн",
     "confirm_btn": "Подтвердить",
     "submitting": "Отправка...",
     "error": "Произошла ошибка. Попробуйте ещё раз.",
@@ -115,7 +110,8 @@
       "orders": "Заказы",
       "settings": "Настройки",
       "role": "Администратор",
-      "logout": "Выйти"
+      "logout": "Выйти",
+      "promos": "Промокоды"
     },
     "dashboard": {
       "title": "Панель управления",
@@ -156,6 +152,9 @@
       "field_image": "Изображение товара",
       "field_price": "Цена (сум) *",
       "field_discount": "Скидка %",
+      "field_unit": "Единица измерения",
+      "unit_dona": "Штучно",
+      "unit_kg": "Килограмм",
       "field_category": "Категория *",
       "upload_btn": "Загрузить с устройства",
       "change_img": "Выбрать другое фото",
@@ -300,6 +299,35 @@
       "error_too_short": "Пароль должен быть не менее 4 символов",
       "success_changed": "Пароль успешно изменён",
       "error_generic": "Произошла ошибка"
+    },
+    "promos": {
+      "title": "Промокоды",
+      "new_btn": "+ Новый промокод",
+      "no_promos": "Промокодов нет",
+      "modal_new": "Новый промокод",
+      "modal_edit": "Редактировать промокод",
+      "field_code": "Промокод",
+      "field_type": "Тип скидки",
+      "type_percent": "Процент (%)",
+      "type_fixed": "Сумма (сум)",
+      "field_value_pct": "Скидка (%)",
+      "field_value_sum": "Скидка (сум)",
+      "field_max_discount": "Макс. скидка (сум)",
+      "field_min_order": "Мин. заказ (сум)",
+      "field_usage_limit": "Лимит использований",
+      "field_expires": "Срок действия",
+      "check_active": "Активен",
+      "min_order": "Мин. заказ",
+      "max_discount": "Макс. скидка",
+      "used": "Использовано",
+      "until": "До",
+      "expired": "Истёк",
+      "limit_reached": "Лимит исчерпан",
+      "toast_code_required": "❌ Промокод не введён",
+      "toast_added": "✅ Добавлено",
+      "toast_updated": "✅ Обновлено",
+      "toast_deleted": "🗑️ Удалено",
+      "confirm_delete": "Удалить промокод?"
     }
   },
   "profile": {
@@ -312,5 +340,13 @@
   "header": {
     "dark_mode": "Тёмная тема",
     "light_mode": "Светлая тема"
+  },
+  "promo": {
+    "discount": "Скидка",
+    "remove": "Убрать",
+    "err_invalid": "Промокод неверный",
+    "err_expired": "Срок промокода истёк",
+    "err_limit": "Лимит промокода исчерпан",
+    "err_min_order": "Сумма заказа недостаточна"
   }
 }

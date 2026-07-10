@@ -37,6 +37,14 @@ export const updateOrderStatus = (id, status) =>
   api.patch(`/orders/${id}/status`, { status })
 export const deleteOrder = (id) => api.delete(`/orders/${id}`)
 
+// ── Promo codes ────────────────────────────────────
+export const getPromos = () => api.get('/promos')
+export const createPromo = (data) => api.post('/promos', data)
+export const updatePromo = (id, data) => api.put(`/promos/${id}`, data)
+export const deletePromo = (id) => api.delete(`/promos/${id}`)
+export const validatePromo = (code, subtotal) =>
+  api.get('/promos/validate', { params: { code, subtotal } })
+
 // ── Stats ──────────────────────────────────────────
 export const getStats = () => api.get('/stats')
 

@@ -7,6 +7,7 @@ from typing import List, Optional
 import models, schemas
 from auth import get_current_admin
 from database import get_db
+from routers import promos
 
 router = APIRouter(prefix="/api/orders", tags=["orders"])
 
@@ -22,7 +23,7 @@ _NOTIFY_MSGS = {
 
 # Kept in sync with the bot's own order flow (telegram_bot/bot.py) so an order
 # placed from the Mini App is announced exactly like a bot-placed one.
-_PAY_LABELS = {"naqd": "💵 Naqd pul", "karta": "💳 Bank kartasi", "online": "📱 Online"}
+_PAY_LABELS = {"naqd": "💵 Naqd pul"}
 
 _h   = lambda s: escape(str(s or ""))
 _fmt = lambda n: f"{int(n):,}".replace(",", " ")
@@ -96,6 +97,10 @@ def _notify_new_order(order: models.Order) -> None:
         for it in (order.items or [])
     )
     note_line = f"💬 {_h(order.note)}\n" if order.note else ""
+    promo_line = (
+        f"🎟 Promokod: <b>{_h(order.promo_code)}</b> (−{_fmt(order.discount)} so'm)\n"
+        if order.discount and order.promo_code else ""
+    )
     admin_txt = (
         f"🆕 <b>YANGI BUYURTMA #{order.id}</b>\n\n"
         f"👤 <b>{_h(order.name)}</b>\n"
@@ -104,6 +109,7 @@ def _notify_new_order(order: models.Order) -> None:
         f"{note_line}"
         f"💳 {pay_disp}\n\n"
         f"<b>Mahsulotlar:</b>\n{items_lines}\n\n"
+        f"{promo_line}"
         f"📦 Yetkazish: {_fmt(order.delivery)} so'm\n"
         f"💰 <b>Jami: {_fmt(order.total)} so'm</b>"
     )
@@ -156,6 +162,21 @@ def create_order(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
+    # Re-validate the promo server-side so the discount and total can't be
+    # tampered with from the client. An invalid/expired code is silently ignored
+    # (no discount) rather than rejecting the whole order.
+    discount = 0
+    applied_code = ""
+    promo = None
+    if data.promo_code:
+        promo = promos.get_by_code(db, data.promo_code)
+        amount, reason = promos.evaluate(promo, data.subtotal)
+        if not reason:
+            discount = amount
+            applied_code = promo.code
+
+    total = max(0, data.subtotal - discount) + data.delivery
+
     order = models.Order(
         name=data.name,
         phone=data.phone,
@@ -164,12 +185,16 @@ def create_order(
         payment=data.payment,
         subtotal=data.subtotal,
         delivery=data.delivery,
-        total=data.total,
+        discount=discount,
+        promo_code=applied_code,
+        total=total,
         items=[item.model_dump() for item in data.items],
         status="new",
         telegram_chat_id=data.telegram_chat_id,
     )
     db.add(order)
+    if promo is not None and applied_code:
+        promo.used_count = (promo.used_count or 0) + 1
     db.commit()
     db.refresh(order)
     background_tasks.add_task(_notify_new_order, order)

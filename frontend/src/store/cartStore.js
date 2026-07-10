@@ -6,16 +6,16 @@ const useCartStore = create(
     (set, get) => ({
       items: [],
 
-      addItem(product) {
+      addItem(product, qty = (product.unit === 'kg' ? 0.5 : 1)) {
         const items = get().items
         const existing = items.find(i => i.id === product.id)
         const finalPrice = product.discount > 0
           ? Math.round(product.price * (1 - product.discount / 100))
           : product.price
         if (existing) {
-          set({ items: items.map(i => i.id === product.id ? { ...i, qty: i.qty + 1 } : i) })
+          set({ items: items.map(i => i.id === product.id ? { ...i, qty: Math.round((i.qty + qty)*100)/100 } : i) })
         } else {
-          set({ items: [...items, { ...product, finalPrice, qty: 1 }] })
+          set({ items: [...items, { ...product, finalPrice, qty }] })
         }
       },
 
@@ -23,14 +23,15 @@ const useCartStore = create(
         set({ items: get().items.filter(i => i.id !== id) })
       },
 
-      decrementItem(id) {
+      decrementItem(id, step) {
         const items = get().items
         const item = items.find(i => i.id === id)
         if (!item) return
-        if (item.qty <= 1) {
+        const dec = step ?? (item.unit === 'kg' ? 0.5 : 1)
+        if (item.qty <= dec) {
           set({ items: items.filter(i => i.id !== id) })
         } else {
-          set({ items: items.map(i => i.id === id ? { ...i, qty: i.qty - 1 } : i) })
+          set({ items: items.map(i => i.id === id ? { ...i, qty: Math.round((i.qty - dec)*100)/100 } : i) })
         }
       },
 

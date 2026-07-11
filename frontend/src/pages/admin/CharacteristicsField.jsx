@@ -28,7 +28,8 @@ export default function CharacteristicsField({ form, setForm }) {
         <label style={labelStyle}>{t('admin.products.field_characteristics')}</label>
         <div style={{ display: 'flex', gap: 4 }}>
           {TABS.map(tb => {
-            const filled = !!form[`characteristics_${tb.code}`]
+            const filled = parseCharacteristics(form[`characteristics_${tb.code}`])
+              .some(r => (r.label && r.label.trim()) || (r.value && r.value.trim()))
             return (
               <button key={tb.code} type="button" onClick={() => setTab(tb.code)}
                 style={{

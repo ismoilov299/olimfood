@@ -16,7 +16,15 @@ export function parseCharacteristics(raw) {
   return [{ label: '', value: String(raw) }]
 }
 
+// Used while editing — keeps every row, including ones the admin just added
+// or is mid-way through typing into. Filtering here would make a freshly
+// added blank row vanish immediately (it'd be stripped before ever rendering).
 export function stringifyCharacteristics(rows) {
-  const cleaned = (rows || []).filter(r => (r.label && r.label.trim()) || (r.value && r.value.trim()))
-  return cleaned.length ? JSON.stringify(cleaned) : ''
+  return rows && rows.length ? JSON.stringify(rows) : ''
+}
+
+// Used only right before saving — drops rows left fully blank so we don't
+// persist empty junk.
+export function cleanCharacteristics(rows) {
+  return (rows || []).filter(r => (r.label && r.label.trim()) || (r.value && r.value.trim()))
 }

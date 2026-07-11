@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api'
 import { buildCategoryTree } from '../../utils/categoryTree'
-import { stringifyCharacteristics } from '../../utils/characteristics'
+import { parseCharacteristics, stringifyCharacteristics, cleanCharacteristics } from '../../utils/characteristics'
 import LangTabs from './LangTabs'
 import CharacteristicsField from './CharacteristicsField'
 
@@ -78,7 +78,14 @@ export default function Products() {
     if (!form.name_uz || !form.price || !form.cat_id) { showToast(t('admin.products.toast_required')); return }
     setSaving(true)
     try {
-      const data = { ...form, price: parseFloat(form.price), cat_id: parseInt(form.cat_id), discount: parseInt(form.discount)||0 }
+      const finalizeCharacteristics = (raw) => stringifyCharacteristics(cleanCharacteristics(parseCharacteristics(raw)))
+      const data = {
+        ...form,
+        characteristics_uz: finalizeCharacteristics(form.characteristics_uz),
+        characteristics_uzl: finalizeCharacteristics(form.characteristics_uzl),
+        characteristics_ru: finalizeCharacteristics(form.characteristics_ru),
+        price: parseFloat(form.price), cat_id: parseInt(form.cat_id), discount: parseInt(form.discount)||0,
+      }
       if (editing) { await updateProduct(editing.id, data) }
       else         { await createProduct(data) }
       showToast(editing ? t('admin.products.toast_updated') : t('admin.products.toast_added'))

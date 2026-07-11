@@ -52,9 +52,14 @@ def _feedback_kb(order_id: int) -> dict | None:
     base = os.getenv("WEBAPP_URL", "").rstrip("/")
     if not base:
         return None
-    return {"inline_keyboard": [[
-        {"text": "⭐ Fikr bildirish", "url": f"{base}/feedback/{order_id}"},
-    ]]}
+    url = f"{base}/feedback/{order_id}"
+    btn = {"text": "⭐ Fikr bildirish"}
+    if url.startswith("https://"):
+        btn["web_app"] = {"url": url}
+    else:
+        # HTTP — use a regular URL button (useful for local dev)
+        btn["url"] = url
+    return {"inline_keyboard": [[btn]]}
 
 
 def _tg_notify(chat_id: str, order_id: int, status: str) -> None:

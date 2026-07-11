@@ -264,9 +264,13 @@ def _feedback_kb(order_id: int) -> "InlineKeyboardMarkup | None":
     """Inline button linking to the feedback form, attached when an order is delivered."""
     if not WEBAPP_URL:
         return None
-    return InlineKeyboardMarkup([[
-        InlineKeyboardButton("⭐ Fikr bildirish", url=f"{WEBAPP_URL}/feedback/{order_id}"),
-    ]])
+    url = f"{WEBAPP_URL}/feedback/{order_id}"
+    if url.startswith("https://"):
+        btn = InlineKeyboardButton("⭐ Fikr bildirish", web_app=WebAppInfo(url=url))
+    else:
+        # HTTP — use regular URL button (useful for local dev)
+        btn = InlineKeyboardButton("⭐ Fikr bildirish", url=url)
+    return InlineKeyboardMarkup([[btn]])
 
 
 CANCEL_KB = InlineKeyboardMarkup([[InlineKeyboardButton("❌ Bekor qilish", callback_data="co_cancel")]])

@@ -36,6 +36,13 @@ export default function Feedback() {
   const [existing, setExisting] = useState(null)
 
   useEffect(() => {
+    const wa = window.Telegram?.WebApp
+    if (!wa) return
+    wa.ready()
+    wa.expand()
+  }, [])
+
+  useEffect(() => {
     getFeedbackContext(orderId)
       .then(({ data }) => {
         if (data.feedback) { setExisting(data.feedback); setState('done') }

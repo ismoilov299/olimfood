@@ -56,6 +56,9 @@ class ProductBase(BaseModel):
     description_uz: str = ""
     description_uzl: str = ""
     description_ru: str = ""
+    characteristics_uz: str = ""
+    characteristics_uzl: str = ""
+    characteristics_ru: str = ""
     weight_uz: str = ""
     weight_uzl: str = ""
     weight_ru: str = ""
@@ -78,6 +81,9 @@ class ProductUpdate(BaseModel):
     description_uz: Optional[str] = None
     description_uzl: Optional[str] = None
     description_ru: Optional[str] = None
+    characteristics_uz: Optional[str] = None
+    characteristics_uzl: Optional[str] = None
+    characteristics_ru: Optional[str] = None
     weight_uz: Optional[str] = None
     weight_uzl: Optional[str] = None
     weight_ru: Optional[str] = None
@@ -97,6 +103,7 @@ class ProductOut(ProductBase):
     category_emoji: Optional[str] = None
     name: str = ""                 # so'ralgan tilda hal qilingan nom
     description: str = ""
+    characteristics: str = ""
     weight: str = ""
 
     class Config:

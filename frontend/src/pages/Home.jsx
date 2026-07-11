@@ -483,18 +483,39 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
         {/* Sheet — bg not surface */}
         <div style={{ position:'relative', marginTop:-22, background:t.bg, borderRadius:'28px 28px 0 0', padding:'24px 22px 140px' }}>
           <div style={{ width:42, height:5, borderRadius:'999px', background:t.line, margin:'0 auto 18px' }} />
-          <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:14 }}>
-            <div>
-              <div style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.red, letterSpacing:'.04em', marginBottom:6 }}>{p.category_name || tr('home.dish')}</div>
-              <div style={{ fontFamily:INTER, fontWeight:800, fontSize:25, color:t.fg, letterSpacing:'-.01em', lineHeight:1.1 }}>{p.name}</div>
+
+          {/* Product info — its own card */}
+          <div style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:'18px 18px 16px' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:14 }}>
+              <div>
+                <div style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12, color:t.red, letterSpacing:'.04em', marginBottom:6 }}>{p.category_name || tr('home.dish')}</div>
+                <div style={{ fontFamily:INTER, fontWeight:800, fontSize:25, color:t.fg, letterSpacing:'-.01em', lineHeight:1.1 }}>{p.name}</div>
+              </div>
+              <div style={{ flexShrink:0, display:'flex', alignItems:'center', gap:6, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px solid ${t.glassBd}`, padding:'8px 12px', borderRadius:14 }}>
+                <span style={{ color:'#f5a623' }}>★</span>
+                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg }}>{rating}</span>
+              </div>
             </div>
-            <div style={{ flexShrink:0, display:'flex', alignItems:'center', gap:6, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px solid ${t.glassBd}`, padding:'8px 12px', borderRadius:14 }}>
-              <span style={{ color:'#f5a623' }}>★</span>
-              <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg }}>{rating}</span>
+            {p.description && <p style={{ fontFamily:MANROPE, fontWeight:400, fontSize:14, lineHeight:1.65, color:t.muted, margin:'16px 0 0' }}>{p.description}</p>}
+            {/* Unit of measure — informational only, not selectable */}
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:14, paddingTop:14, borderTop:`1px solid ${t.line}` }}>
+              <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12.5, color:t.muted }}>{tr('home.unit_label')}</span>
+              <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12.5, color:t.fg, background:t.glassS, border:`1px solid ${t.glassBd}`, borderRadius:999, padding:'4px 11px' }}>
+                {tr(`home.unit_${p.unit === 'kg' ? 'kg' : 'dona'}`)}
+              </span>
             </div>
           </div>
-          {p.description && <p style={{ fontFamily:MANROPE, fontWeight:400, fontSize:14, lineHeight:1.65, color:t.muted, margin:'16px 0 4px' }}>{p.description}</p>}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginTop:22 }}>
+
+          {/* Characteristics — its own separate card */}
+          {p.characteristics && (
+            <div style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:'16px 18px', marginTop:14 }}>
+              <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg, marginBottom:8 }}>{tr('home.characteristics_label')}</div>
+              <p style={{ fontFamily:MANROPE, fontWeight:400, fontSize:14, lineHeight:1.65, color:t.muted, margin:0, whiteSpace:'pre-line' }}>{p.characteristics}</p>
+            </div>
+          )}
+
+          {/* Quantity — its own separate card */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:'14px 18px', marginTop:14 }}>
             <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg }}>{tr('home.quantity')}</span>
             <div style={{ display:'flex', alignItems:'center', gap:18, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px solid ${t.glassBd}`, borderRadius:16, padding:'8px 14px' }}>
               <button onClick={() => setQty(q => Math.max(step, Math.round((q-step)*100)/100))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>

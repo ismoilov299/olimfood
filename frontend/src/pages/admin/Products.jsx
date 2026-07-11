@@ -8,6 +8,7 @@ import LangTabs from './LangTabs'
 const EMPTY = {
   name_uz:'', name_uzl:'', name_ru:'',
   description_uz:'', description_uzl:'', description_ru:'',
+  characteristics_uz:'', characteristics_uzl:'', characteristics_ru:'',
   weight_uz:'', weight_uzl:'', weight_ru:'',
   price:'', unit:'dona', image_url:'', cat_id:'', discount:0, available:true, popular:false,
 }
@@ -52,6 +53,7 @@ export default function Products() {
     setForm({
       name_uz: p.name_uz||'', name_uzl: p.name_uzl||'', name_ru: p.name_ru||'',
       description_uz: p.description_uz||'', description_uzl: p.description_uzl||'', description_ru: p.description_ru||'',
+      characteristics_uz: p.characteristics_uz||'', characteristics_uzl: p.characteristics_uzl||'', characteristics_ru: p.characteristics_ru||'',
       weight_uz: p.weight_uz||'', weight_uzl: p.weight_uzl||'', weight_ru: p.weight_ru||'',
       price: p.price, unit: p.unit||'dona', image_url: p.image_url||'', cat_id: p.cat_id,
       discount: p.discount||0, available: p.available, popular: p.popular,
@@ -204,6 +206,8 @@ export default function Products() {
               form={form} setForm={setForm} placeholder={t('admin.products.field_name')} />
             <LangTabs label={t('admin.products.field_desc')} baseKey="description" multiline
               form={form} setForm={setForm} placeholder={t('admin.products.field_desc')} />
+            <LangTabs label={t('admin.products.field_characteristics')} baseKey="characteristics" multiline
+              form={form} setForm={setForm} placeholder={t('admin.products.field_characteristics')} />
             <LangTabs label={t('admin.products.field_qty')} baseKey="weight"
               form={form} setForm={setForm} placeholder="500 g, 2 dona..." />
 

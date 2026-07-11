@@ -13,9 +13,10 @@ router = APIRouter(prefix="/api/products", tags=["products"])
 
 def _enrich(product: models.Product, lang: str) -> schemas.ProductOut:
     out = schemas.ProductOut.model_validate(product)
-    out.name        = resolve(product, "name", lang)
-    out.description = resolve(product, "description", lang)
-    out.weight      = resolve(product, "weight", lang)
+    out.name            = resolve(product, "name", lang)
+    out.description     = resolve(product, "description", lang)
+    out.characteristics = resolve(product, "characteristics", lang)
+    out.weight          = resolve(product, "weight", lang)
     if product.category:
         out.category_name  = resolve(product.category, "name", lang)
         out.category_emoji = product.category.emoji

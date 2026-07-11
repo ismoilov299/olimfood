@@ -14,16 +14,16 @@ router = APIRouter(prefix="/api/orders", tags=["orders"])
 VALID_STATUSES = {"new", "confirmed", "preparing", "delivering", "delivered", "cancelled"}
 
 _NOTIFY_MSGS = {
-    "confirmed":  "✅ Buyurtmangiz #{id} tasdiqlandi! Tez orada tayyorlanadi 🍽️",
-    "preparing":  "👨‍🍳 Buyurtmangiz #{id} tayyorlanmoqda! Kutib turing...",
-    "delivering": "🚗 Buyurtmangiz #{id} yo'lda! Eshikni kuting 🏠",
-    "delivered":  "🟢 Buyurtmangiz #{id} yetkazildi! Ishtahangiz yo'l bo'lsin! 🙏",
-    "cancelled":  "❌ Buyurtmangiz #{id} bekor qilindi.",
+    "confirmed":  "✅ Буюртмангиз #{id} тасдиқланди! Тез орада тайёрланади 🍽️",
+    "preparing":  "👨‍🍳 Буюртмангиз #{id} тайёрланмоқда! Кутиб туринг...",
+    "delivering": "🚗 Буюртмангиз #{id} йўлда! Эшикни кутинг 🏠",
+    "delivered":  "🟢 Буюртмангиз #{id} етказилди! Иштаҳангиз очиқ бўлсин! 🙏",
+    "cancelled":  "❌ Буюртмангиз #{id} бекор қилинди.",
 }
 
 # Kept in sync with the bot's own order flow (telegram_bot/bot.py) so an order
 # placed from the Mini App is announced exactly like a bot-placed one.
-_PAY_LABELS = {"naqd": "💵 Naqd pul"}
+_PAY_LABELS = {"naqd": "💵 Нақд пул"}
 
 _h   = lambda s: escape(str(s or ""))
 _fmt = lambda n: f"{int(n):,}".replace(",", " ")
@@ -66,14 +66,14 @@ def _admin_kb(oid: int) -> dict:
     """Status-change buttons handled by the running bot's `^as_` callback."""
     return {"inline_keyboard": [
         [
-            {"text": "✅ Tasdiqlash",      "callback_data": f"as_confirmed_{oid}"},
-            {"text": "👨‍🍳 Tayyorlanmoqda", "callback_data": f"as_preparing_{oid}"},
+            {"text": "✅ Тасдиқлаш",       "callback_data": f"as_confirmed_{oid}"},
+            {"text": "👨‍🍳 Тайёрланмоқда",  "callback_data": f"as_preparing_{oid}"},
         ],
         [
-            {"text": "🚗 Yetkazilmoqda",  "callback_data": f"as_delivering_{oid}"},
-            {"text": "🟢 Yetkazildi",     "callback_data": f"as_delivered_{oid}"},
+            {"text": "🚗 Етказилмоқда",   "callback_data": f"as_delivering_{oid}"},
+            {"text": "🟢 Етказилди",      "callback_data": f"as_delivered_{oid}"},
         ],
-        [{"text": "❌ Bekor qilish",       "callback_data": f"as_cancelled_{oid}"}],
+        [{"text": "❌ Бекор қилиш",        "callback_data": f"as_cancelled_{oid}"}],
     ]}
 
 
@@ -89,12 +89,12 @@ def _notify_new_order(order: models.Order) -> None:
     if order.telegram_chat_id:
         _tg_send(
             order.telegram_chat_id,
-            f"🎉 <b>Buyurtma qabul qilindi!</b>\n\n"
-            f"📦 Buyurtma <b>#{order.id}</b>\n"
-            f"💰 Jami: <b>{_fmt(order.total)} so'm</b>\n"
-            f"💳 To'lov: {pay_disp}\n\n"
-            f"Yetkazib berish taxminan <b>30–45 daqiqa</b> ichida.\n"
-            f"Status o'zgarishini Telegram orqali bilasiz 👇",
+            f"🎉 <b>Буюртма қабул қилинди!</b>\n\n"
+            f"📦 Буюртма <b>#{order.id}</b>\n"
+            f"💰 Жами: <b>{_fmt(order.total)} сўм</b>\n"
+            f"💳 Тўлов: {pay_disp}\n\n"
+            f"Етказиб бериш тахминан <b>30–45 дақиқа</b> ичида.\n"
+            f"Статус ўзгаришини Telegram орқали биласиз 👇",
         )
 
     # 2. Admin group alert with actionable status buttons.
@@ -104,25 +104,25 @@ def _notify_new_order(order: models.Order) -> None:
     items_lines = "\n".join(
         f"  {it.get('emoji','')}{' ' if it.get('emoji') else ''}"
         f"{_h(it.get('name',''))} × {it.get('qty',0)} = "
-        f"{_fmt(it.get('price',0) * it.get('qty',0))} so'm"
+        f"{_fmt(it.get('price',0) * it.get('qty',0))} сўм"
         for it in (order.items or [])
     )
     note_line = f"💬 {_h(order.note)}\n" if order.note else ""
     promo_line = (
-        f"🎟 Promokod: <b>{_h(order.promo_code)}</b> (−{_fmt(order.discount)} so'm)\n"
+        f"🎟 Промокод: <b>{_h(order.promo_code)}</b> (−{_fmt(order.discount)} сўм)\n"
         if order.discount and order.promo_code else ""
     )
     admin_txt = (
-        f"🆕 <b>YANGI BUYURTMA #{order.id}</b>\n\n"
+        f"🆕 <b>ЯНГИ БУЮРТМА #{order.id}</b>\n\n"
         f"👤 <b>{_h(order.name)}</b>\n"
         f"📞 {_h(order.phone)}\n"
         f"📍 {_h(order.address)}\n"
         f"{note_line}"
         f"💳 {pay_disp}\n\n"
-        f"<b>Mahsulotlar:</b>\n{items_lines}\n\n"
+        f"<b>Маҳсулотлар:</b>\n{items_lines}\n\n"
         f"{promo_line}"
-        f"📦 Yetkazish: {_fmt(order.delivery)} so'm\n"
-        f"💰 <b>Jami: {_fmt(order.total)} so'm</b>"
+        f"📦 Етказиш: {_fmt(order.delivery)} сўм\n"
+        f"💰 <b>Жами: {_fmt(order.total)} сўм</b>"
     )
     _tg_send(int(admin_raw), admin_txt, reply_markup=_admin_kb(order.id))
 

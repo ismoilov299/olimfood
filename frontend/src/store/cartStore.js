@@ -6,7 +6,7 @@ const useCartStore = create(
     (set, get) => ({
       items: [],
 
-      addItem(product, qty = (product.unit === 'kg' ? 0.5 : 1)) {
+      addItem(product, qty = ((product.unit === 'kg' || product.unit === 'gr') ? (product.step || 0.5) : 1)) {
         const items = get().items
         const existing = items.find(i => i.id === product.id)
         const finalPrice = product.discount > 0
@@ -27,7 +27,7 @@ const useCartStore = create(
         const items = get().items
         const item = items.find(i => i.id === id)
         if (!item) return
-        const dec = step ?? (item.unit === 'kg' ? 0.5 : 1)
+        const dec = step ?? ((item.unit === 'kg' || item.unit === 'gr') ? (item.step || 0.5) : 1)
         if (item.qty <= dec) {
           set({ items: items.filter(i => i.id !== id) })
         } else {

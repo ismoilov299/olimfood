@@ -66,7 +66,9 @@ class Product(Base):
     weight_uzl      = Column(String(50), default="")
     weight_ru       = Column(String(50), default="")
     price       = Column(Float, nullable=False)
-    unit        = Column(String(10), default="dona")   # dona | kg
+    unit        = Column(String(10), default="dona")   # dona | kg | gr
+    step        = Column(Float, default=0.5)   # qty +/- increment when unit == kg or gr
+    net_weight  = Column(Float, nullable=True)   # netto weight in grams of a single dona (piece)
     emoji       = Column(String(10), default="🍽️")
     image_url   = Column(String(500), default="")
     cat_id      = Column(Integer, ForeignKey("categories.id"), nullable=False)

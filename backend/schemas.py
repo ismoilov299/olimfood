@@ -63,7 +63,9 @@ class ProductBase(BaseModel):
     weight_uzl: str = ""
     weight_ru: str = ""
     price: float
-    unit: str = "dona"          # dona | kg
+    unit: str = "dona"          # dona | kg | gr
+    step: float = Field(default=0.5, gt=0)   # qty +/- increment when unit == kg or gr
+    net_weight: Optional[float] = Field(default=None, gt=0)   # netto weight in grams of 1 dona
     emoji: str = "🍽️"
     image_url: str = ""
     cat_id: int
@@ -89,6 +91,8 @@ class ProductUpdate(BaseModel):
     weight_ru: Optional[str] = None
     price: Optional[float] = None
     unit: Optional[str] = None
+    step: Optional[float] = Field(default=None, gt=0)
+    net_weight: Optional[float] = Field(default=None, gt=0)
     emoji: Optional[str] = None
     image_url: Optional[str] = None
     cat_id: Optional[int] = None

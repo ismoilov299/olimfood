@@ -43,8 +43,8 @@ const THEMES = {
 }
 
 const fmtNum = n => n ? Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') : '0'
-const qtyStep  = unit => unit === 'kg' ? 0.5 : 1
-const fmtQty   = (qty, unit) => unit === 'kg' ? (Math.round(qty*10)/10).toFixed(1) : String(qty)
+const qtyStep  = (unit, step) => (unit === 'kg' || unit === 'gr') ? (step || 0.5) : 1
+const fmtQty   = (qty, unit) => unit === 'kg' ? (Math.round(qty*10)/10).toFixed(1) : String(Math.round(qty))
 const INTER   = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"
 const MANROPE = "'Manrope', sans-serif"
 const MONO    = "'Space Mono', monospace"
@@ -452,7 +452,7 @@ function FlyingItem({ from, to, image, color, onDone }) {
 
 // ─── Product Detail ───────────────────────────────────────────────────────────
 function ProductDetail({ p, t, onClose, onAddCart, liked, onLike, categories=[], certificates=[] }) {
-  const step = qtyStep(p.unit)
+  const step = qtyStep(p.unit, p.step)
   const [qty, setQty] = useState(step)
   const [imgFull, setImgFull] = useState(false)
   const [certView, setCertView] = useState(null)
@@ -503,11 +503,16 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike, categories=[],
             </div>
             {p.description && <p style={{ fontFamily:MANROPE, fontWeight:400, fontSize:14, lineHeight:1.65, color:t.muted, margin:'16px 0 0' }}>{p.description}</p>}
             {/* Unit of measure — informational only, not selectable */}
-            <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:14, paddingTop:14, borderTop:`1px solid ${t.line}` }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:14, paddingTop:14, borderTop:`1px solid ${t.line}`, flexWrap:'wrap' }}>
               <span style={{ fontFamily:MANROPE, fontWeight:600, fontSize:12.5, color:t.muted }}>{tr('home.unit_label')}</span>
               <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12.5, color:t.fg, background:t.glassS, border:`1px solid ${t.glassBd}`, borderRadius:999, padding:'4px 11px' }}>
-                {tr(`home.unit_${p.unit === 'kg' ? 'kg' : 'dona'}`)}
+                {tr(`home.unit_${p.unit || 'dona'}`)}
               </span>
+              {p.unit === 'dona' && p.net_weight > 0 && (
+                <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12.5, color:t.muted, background:t.glassS, border:`1px solid ${t.glassBd}`, borderRadius:999, padding:'4px 11px' }}>
+                  {tr('home.net_weight_value', { weight: Math.round(p.net_weight) })}
+                </span>
+              )}
             </div>
           </div>
 
@@ -533,7 +538,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike, categories=[],
               <button onClick={() => setQty(q => Math.max(step, Math.round((q-step)*100)/100))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IMinus s={15} c={t.fg} />
               </button>
-              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg, minWidth:44, textAlign:'center' }}>{fmtQty(qty, p.unit)} {tr(`home.unit_${p.unit === 'kg' ? 'kg' : 'dona'}`)}</span>
+              <span style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg, minWidth:44, textAlign:'center' }}>{fmtQty(qty, p.unit)} {tr(`home.unit_${p.unit || 'dona'}`)}</span>
               <button onClick={() => setQty(q => Math.round((q+step)*100)/100)} style={{ width:30, height:30, borderRadius:10, border:'none', background:t.red, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IPlus s={15} c="#fff" />
               </button>

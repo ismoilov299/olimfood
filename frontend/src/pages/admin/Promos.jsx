@@ -116,7 +116,7 @@ export default function Promos() {
 
             <div style={{ marginBottom:14 }}>
               <label style={labelStyle}>{t('admin.promos.field_code')}</label>
-              <input placeholder="OLIMFOOD30" value={form.code}
+              <input placeholder="OLIMBRAND30" value={form.code}
                 onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
                 style={{ ...lightInput, fontFamily:'monospace', letterSpacing:1, fontWeight:700 }} />
             </div>

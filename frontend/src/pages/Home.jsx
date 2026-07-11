@@ -175,7 +175,7 @@ function Header({ t, totalItems, onCartOpen, onFavorites, isDark, onToggle, cart
         <IMenu s={22} c={t.fg} />
       </button>
 
-      <img className="anim-logo" src={isDark ? '/logo-oq-dark.png' : '/logo-oq.png'} alt="OlimFood" style={{ height:32, objectFit:'contain', display:'block' }} />
+      <img className="anim-logo" src={isDark ? '/logo-oq-dark.png' : '/logo-oq.png'} alt="Olimbrand" style={{ height:32, objectFit:'contain', display:'block' }} />
 
       <div style={{ display:'flex', alignItems:'center', gap:4, flexShrink:0 }}>
         <button onClick={onFavorites} style={{ width:40, height:40, borderRadius:12, border:'none', background:'transparent', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>

@@ -12,9 +12,9 @@ from seed import seed
 seed()
 
 app = FastAPI(
-    title="OlimFood API",
+    title="Olimbrand API",
     version="1.0.0",
-    description="OlimFood food delivery REST API",
+    description="Olimbrand food delivery REST API",
 )
 
 # CORS — allow all origins (dev mode + tunnel support)
@@ -47,7 +47,7 @@ app.include_router(feedback.router)
 
 @app.get("/")
 def root():
-    return {"status": "ok", "app": "OlimFood API", "version": "1.0.0"}
+    return {"status": "ok", "app": "Olimbrand API", "version": "1.0.0"}
 
 
 @app.get("/health")

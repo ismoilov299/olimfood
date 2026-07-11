@@ -183,7 +183,7 @@ export default function Banners() {
             {/* Design fields */}
             {tab==='design' && (
               <>
-                {[{key:'title',label:t('admin.banners.field_title'),ph:'MAXSUS TAKLIF'},{key:'subtitle',label:t('admin.banners.field_subtitle'),ph:'30% chegirma'},{key:'code',label:t('admin.banners.field_promo'),ph:'OLIMFOOD30'},{key:'emoji',label:t('admin.banners.field_emoji'),ph:'🔥'}].map(({key,label,ph}) => (
+                {[{key:'title',label:t('admin.banners.field_title'),ph:'MAXSUS TAKLIF'},{key:'subtitle',label:t('admin.banners.field_subtitle'),ph:'30% chegirma'},{key:'code',label:t('admin.banners.field_promo'),ph:'OLIMBRAND30'},{key:'emoji',label:t('admin.banners.field_emoji'),ph:'🔥'}].map(({key,label,ph}) => (
                   <div key={key} style={{ marginBottom:12 }}>
                     <label style={labelStyle}>{label}</label>
                     <input placeholder={ph} value={form[key]} onChange={e => setForm(f=>({...f,[key]:e.target.value}))} style={lightInput} />

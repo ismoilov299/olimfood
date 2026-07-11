@@ -59,7 +59,7 @@ export default function AdminLayout() {
         {/* Logo */}
         <div style={{ padding:'26px 22px 18px', borderBottom:'1px solid rgba(20,16,14,0.07)' }}>
           <div style={{ display:'flex', alignItems:'center', userSelect:'none' }}>
-            <img src="/logo-oq.png" alt="OlimFood" style={{ height:34, objectFit:'contain', display:'block' }} />
+            <img src="/logo-oq.png" alt="Olimbrand" style={{ height:34, objectFit:'contain', display:'block' }} />
           </div>
           <div style={{ fontFamily:MANROPE, fontSize:10, color:'#8B827B', marginTop:5, fontWeight:800, letterSpacing:'.1em' }}>ADMIN PANEL</div>
           <div style={{ marginTop:10 }}>

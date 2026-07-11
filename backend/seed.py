@@ -21,7 +21,7 @@ def seed():
             banners = [
                 models.Banner(
                     mode="design", title="30% CHEGIRMA",
-                    subtitle="Birinchi buyurtmada", code="OLIMFOOD30",
+                    subtitle="Birinchi buyurtmada", code="OLIMBRAND30",
                     cta_text="Hozir buyurtma bering →", emoji="🔥",
                     discount=30, theme="red",
                     grad_from="#E31E24", grad_to="#8B0000", active=True,

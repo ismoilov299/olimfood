@@ -106,7 +106,7 @@ export default function Settings() {
           <div style={{ fontSize:12, color:'#aaa', marginBottom:20 }}>{t('admin.settings.support_section_hint')}</div>
           <div style={{ marginBottom:14 }}>
             <label style={labelStyle}>{t('admin.settings.field_telegram')}</label>
-            <input value={support.telegram} placeholder="olimfood_support"
+            <input value={support.telegram} placeholder="olimbrand_support"
               onChange={e => setSupport(s => ({ ...s, telegram: e.target.value }))}
               style={lightInput} />
           </div>

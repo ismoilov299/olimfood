@@ -40,6 +40,7 @@ export default function Banners() {
     { key:'product',  label: t('admin.banners.cta_product')  },
     { key:'category', label: t('admin.banners.cta_category') },
     { key:'url',      label: t('admin.banners.cta_url')      },
+    { key:'phone',    label: t('admin.banners.cta_phone')    },
   ]
   const THEMES = Object.entries(THEME_COLORS).map(([key, color]) => ({
     key, color, label: t(`admin.banners.theme_${key}`)
@@ -280,6 +281,10 @@ export default function Banners() {
                 )}
                 {form.cta_action === 'url' && (
                   <input placeholder="https://..." value={form.cta_target}
+                    onChange={e => setForm(f=>({...f,cta_target:e.target.value}))} style={lightInput} />
+                )}
+                {form.cta_action === 'phone' && (
+                  <input type="tel" placeholder="+998 90 123 45 67" value={form.cta_target}
                     onChange={e => setForm(f=>({...f,cta_target:e.target.value}))} style={lightInput} />
                 )}
               </div>

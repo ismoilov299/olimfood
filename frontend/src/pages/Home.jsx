@@ -1136,6 +1136,8 @@ export default function Home() {
     } else if (b.cta_action === 'product') {
       const p = products.find(x => x.id === parseInt(b.cta_target))
       if (p) setDetail(p)
+    } else if (b.cta_action === 'phone') {
+      window.location.href = `tel:${b.cta_target}`
     }
   }
 

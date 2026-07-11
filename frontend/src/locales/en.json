@@ -244,6 +244,7 @@
       "cta_product": "Go to product",
       "cta_category": "Go to category",
       "cta_url": "Open link",
+      "cta_phone": "Call phone number",
       "select_product": "— Select a product —",
       "select_category": "— Select a category —",
       "search_product": "Search...",

@@ -138,6 +138,16 @@ const ITag = ({ s=19, c='currentColor' }) => (
     <path d="M3 9.5 12 4l9 5.5v9L12 20l-9-1.5z"/><path d="m3 9.5 9 5 9-5M12 14.5V20"/>
   </svg>
 )
+const ITelegram = ({ s=20, c='currentColor' }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m21.5 3-19 7.3 6 2.3m13-9.6-2.4 15.6a1 1 0 0 1-1.6.6l-4.9-3.8m9-12.4-9 9m0 0-.5 5 3-3"/>
+  </svg>
+)
+const IPhoneCall = ({ s=20, c='currentColor' }) => (
+  <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z"/>
+  </svg>
+)
 const ICheckCircle = ({ s=52, c='currentColor' }) => (
   <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
@@ -453,7 +463,8 @@ function FlyingItem({ from, to, image, color, onDone }) {
 // ─── Product Detail ───────────────────────────────────────────────────────────
 function ProductDetail({ p, t, onClose, onAddCart, liked, onLike, categories=[], certificates=[] }) {
   const step = qtyStep(p.unit, p.step)
-  const [qty, setQty] = useState(step)
+  const minQty = p.min_qty || step
+  const [qty, setQty] = useState(minQty)
   const [imgFull, setImgFull] = useState(false)
   const [certView, setCertView] = useState(null)
   const { t: tr } = useTranslation()
@@ -535,7 +546,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike, categories=[],
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:'14px 18px', marginTop:14 }}>
             <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg }}>{tr('home.quantity')}</span>
             <div style={{ display:'flex', alignItems:'center', gap:18, background:t.glassS, backdropFilter:'blur(14px) saturate(160%)', WebkitBackdropFilter:'blur(14px) saturate(160%)', border:`1px solid ${t.glassBd}`, borderRadius:16, padding:'8px 14px' }}>
-              <button onClick={() => setQty(q => Math.max(step, Math.round((q-step)*100)/100))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <button onClick={() => setQty(q => Math.max(minQty, Math.round((q-step)*100)/100))} style={{ width:30, height:30, borderRadius:10, border:`1px solid ${t.line}`, background:'transparent', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>
                 <IMinus s={15} c={t.fg} />
               </button>
               <span style={{ fontFamily:INTER, fontWeight:800, fontSize:17, color:t.fg, minWidth:44, textAlign:'center' }}>{fmtQty(qty, p.unit)} {tr(`home.unit_${p.unit || 'dona'}`)}</span>
@@ -897,12 +908,23 @@ function ProfileScreen({ t, tgUser, telegramChatId }) {
   const { t: tr } = useTranslation()
   const [orders,  setOrders]  = useState([])
   const [loading, setLoading] = useState(false)
+  const [support, setSupport] = useState({ telegram:'', phone:'' })
 
   useEffect(() => {
     if (!telegramChatId) return
     setLoading(true)
     getMyOrders(telegramChatId).then(r => setOrders(r.data)).finally(() => setLoading(false))
   }, [telegramChatId])
+
+  useEffect(() => {
+    Promise.all([getSetting('support_telegram'), getSetting('support_phone')])
+      .then(([tg, ph]) => setSupport({ telegram: tg.data.value || '', phone: ph.data.value || '' }))
+      .catch(() => {})
+  }, [])
+
+  const telegramUrl = support.telegram
+    ? (/^https?:\/\//.test(support.telegram) ? support.telegram : `https://t.me/${support.telegram.replace(/^@/, '')}`)
+    : ''
 
   const displayName = tgUser ? [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ') : tr('profile.guest')
 
@@ -960,6 +982,39 @@ function ProfileScreen({ t, tgUser, telegramChatId }) {
           </div>
         ))}
       </div>
+
+      {/* Support — Telegram / phone, admin-configurable from Settings */}
+      {(telegramUrl || support.phone) && (
+        <div style={{ marginTop:30 }}>
+          <div style={{ fontFamily:INTER, fontWeight:700, fontSize:17, color:t.fg, marginBottom:14 }}>{tr('profile.support_title')}</div>
+          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            {telegramUrl && (
+              <a href={telegramUrl} target="_blank" rel="noopener noreferrer"
+                style={{ display:'flex', alignItems:'center', gap:12, background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:14, boxShadow:t.shadow, textDecoration:'none' }}>
+                <div style={{ width:40, height:40, borderRadius:12, background:t.glassS, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <ITelegram s={19} c={t.fg} />
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:13.5, color:t.fg }}>Telegram</div>
+                  <div style={{ fontFamily:MANROPE, fontSize:11.5, color:t.muted, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{support.telegram}</div>
+                </div>
+              </a>
+            )}
+            {support.phone && (
+              <a href={`tel:${support.phone.replace(/\s+/g, '')}`}
+                style={{ display:'flex', alignItems:'center', gap:12, background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:14, boxShadow:t.shadow, textDecoration:'none' }}>
+                <div style={{ width:40, height:40, borderRadius:12, background:t.glassS, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <IPhoneCall s={19} c={t.fg} />
+                </div>
+                <div style={{ minWidth:0 }}>
+                  <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:13.5, color:t.fg }}>{tr('profile.call_us')}</div>
+                  <div style={{ fontFamily:MANROPE, fontSize:11.5, color:t.muted }}>{support.phone}</div>
+                </div>
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -975,19 +1030,9 @@ function Toast({ msg, show }) {
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 export default function Home() {
-  const [isDark,     setIsDark]    = useState(() => !window.matchMedia?.('(prefers-color-scheme: light)')?.matches)
+  const [isDark,     setIsDark]    = useState(true)
   const t = THEMES[isDark ? 'dark' : 'light']
   const { t: tr, i18n } = useTranslation()
-
-  // Follow the device's light/dark setting live (dark is the default; only an
-  // explicit "light" system preference switches to the light theme)
-  useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-color-scheme: light)')
-    if (!mq) return
-    const handler = e => setIsDark(!e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
 
   const [categories, setCats]      = useState([])
   const [products,   setProducts]  = useState([])

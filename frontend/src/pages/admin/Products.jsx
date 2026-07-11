@@ -23,7 +23,7 @@ const EMPTY = {
   description_uz:'', description_uzl:'', description_ru:'',
   characteristics_uz: CHARACTERISTICS_TEMPLATE_UZ, characteristics_uzl:'', characteristics_ru:'',
   weight_uz:'', weight_uzl:'', weight_ru:'',
-  price:'', unit:'dona', step:0.5, net_weight:'', image_url:'', cat_id:'', discount:0, available:true, popular:false,
+  price:'', unit:'dona', step:0.5, min_qty:'', net_weight:'', image_url:'', cat_id:'', discount:0, available:true, popular:false,
 }
 
 export default function Products() {
@@ -68,7 +68,7 @@ export default function Products() {
       description_uz: p.description_uz||'', description_uzl: p.description_uzl||'', description_ru: p.description_ru||'',
       characteristics_uz: p.characteristics_uz||'', characteristics_uzl: p.characteristics_uzl||'', characteristics_ru: p.characteristics_ru||'',
       weight_uz: p.weight_uz||'', weight_uzl: p.weight_uzl||'', weight_ru: p.weight_ru||'',
-      price: p.price, unit: p.unit||'dona', step: p.step||0.5, net_weight: p.net_weight ?? '', image_url: p.image_url||'', cat_id: p.cat_id,
+      price: p.price, unit: p.unit||'dona', step: p.step||0.5, min_qty: p.min_qty ?? '', net_weight: p.net_weight ?? '', image_url: p.image_url||'', cat_id: p.cat_id,
       discount: p.discount||0, available: p.available, popular: p.popular,
     })
     setModal(true)
@@ -86,6 +86,7 @@ export default function Products() {
         characteristics_ru: finalizeCharacteristics(form.characteristics_ru),
         price: parseFloat(form.price), cat_id: parseInt(form.cat_id), discount: parseInt(form.discount)||0,
         step: parseFloat(form.step) || 0.5,
+        min_qty: form.min_qty !== '' ? parseFloat(form.min_qty) : null,
         net_weight: form.net_weight !== '' ? parseFloat(form.net_weight) : null,
       }
       if (editing) { await updateProduct(editing.id, data) }
@@ -298,6 +299,15 @@ export default function Products() {
                 <div style={{ fontSize:11.5, color:'#aaa', marginTop:5 }}>{t('admin.products.field_step_hint')}</div>
               </div>
             )}
+
+            <div style={{ marginBottom:14 }}>
+              <label style={labelStyle}>{t('admin.products.field_min_qty')}</label>
+              <input type="number" min={form.unit === 'gr' ? 1 : 0.1} step={form.unit === 'gr' ? 1 : 0.1}
+                placeholder={form.unit === 'dona' ? '1' : (form.unit === 'gr' ? '50' : '0.5')} value={form.min_qty}
+                onChange={e => setForm(f => ({ ...f, min_qty: e.target.value }))}
+                style={lightInput} />
+              <div style={{ fontSize:11.5, color:'#aaa', marginTop:5 }}>{t('admin.products.field_min_qty_hint')}</div>
+            </div>
 
             {form.unit === 'dona' && (
               <div style={{ marginBottom:14 }}>

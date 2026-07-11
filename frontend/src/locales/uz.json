@@ -178,6 +178,8 @@
       "field_step_hint": "Харидор + / − босганда миқдор шунча ўзгаради, мас: кг учун 0.5, г учун 50",
       "field_net_weight": "Соф оғирлиги (1 донада, г)",
       "field_net_weight_hint": "Маҳсулот саҳифасида харидорга кўрсатилади",
+      "field_min_qty": "Минимал буюртма",
+      "field_min_qty_hint": "Харидор шундан кам буюрта қила олмайди, мас: дона учун 1, кг учун 0.5",
       "field_category": "Категория *",
       "upload_btn": "Localdan расм юклаш",
       "change_img": "Бошқа расм танлаш",
@@ -336,6 +338,10 @@
       "active_session": "● Фаол сессия",
       "logged_in_text": "Ҳозир тизимга кирган сиз",
       "logout_btn": "Тизимдан чиқиш",
+      "support_section": "Мижозлар учун алоқа",
+      "support_section_hint": "Профил бўлимининг остида харидорларга кўринади",
+      "field_telegram": "Telegram (username ёки линк)",
+      "field_phone": "Телефон рақами",
       "system_section": "Тизим ҳақида",
       "sys_project": "Лойиҳа",
       "sys_version": "Версия",
@@ -382,7 +388,9 @@
     "orders_title": "Буюртмалар тарихи",
     "no_telegram": "Буюртмалар тарихини кўриш учун иловани Telegram орқали очинг",
     "no_orders": "Ҳали буюртма бермагансиз",
-    "items_count": "{{count}} та маҳсулот"
+    "items_count": "{{count}} та маҳсулот",
+    "support_title": "Алоқа",
+    "call_us": "Бизга қўнғироқ қилинг"
   },
   "header": {
     "dark_mode": "Тунги режим",

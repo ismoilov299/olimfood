@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { changePassword } from '../../api'
+import { changePassword, getSetting, setSetting } from '../../api'
 import useAuthStore from '../../store/authStore'
 import { useNavigate } from 'react-router-dom'
 
@@ -8,9 +8,17 @@ export default function Settings() {
   const [form, setForm]     = useState({ old_password:'', new_password:'', confirm:'' })
   const [msg,  setMsg]      = useState(null)
   const [saving, setSaving] = useState(false)
+  const [support, setSupport]           = useState({ telegram:'', phone:'' })
+  const [supportSaving, setSupportSaving] = useState(false)
   const { logout } = useAuthStore()
   const navigate = useNavigate()
   const { t } = useTranslation()
+
+  useEffect(() => {
+    Promise.all([getSetting('support_telegram'), getSetting('support_phone')])
+      .then(([tg, ph]) => setSupport({ telegram: tg.data.value || '', phone: ph.data.value || '' }))
+      .catch(() => {})
+  }, [])
 
   const showMsg = (text, type='success') => { setMsg({ text, type }); setTimeout(() => setMsg(null), 3000) }
 
@@ -25,6 +33,18 @@ export default function Settings() {
       setForm({ old_password:'', new_password:'', confirm:'' })
     } catch (e) { showMsg(e.response?.data?.detail || t('admin.settings.error_generic'), 'error') }
     finally { setSaving(false) }
+  }
+
+  const handleSaveSupport = async () => {
+    setSupportSaving(true)
+    try {
+      await Promise.all([
+        setSetting('support_telegram', support.telegram),
+        setSetting('support_phone', support.phone),
+      ])
+      showMsg(t('admin.settings.success_changed'))
+    } catch { showMsg(t('admin.settings.error_generic'), 'error') }
+    finally { setSupportSaving(false) }
   }
 
   return (
@@ -79,24 +99,26 @@ export default function Settings() {
             {t('admin.settings.logout_btn')}
           </button>
         </div>
-      </div>
 
-      {/* Info */}
-      <div style={{ marginTop:24, background:'#fff', borderRadius:16, border:'1px solid #E8ECF0', padding:'20px 24px', maxWidth:800, boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
-        <div style={{ fontWeight:800, fontSize:15, marginBottom:14, color:'#111' }}>{t('admin.settings.system_section')}</div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, fontSize:13 }}>
-          {[
-            [t('admin.settings.sys_project'),  'OlimFood'],
-            [t('admin.settings.sys_version'),  '1.0.0'],
-            [t('admin.settings.sys_frontend'), 'React 19 + Vite'],
-            [t('admin.settings.sys_backend'),  'FastAPI + SQLite'],
-            [t('admin.settings.sys_api'),      'REST + JWT Auth'],
-          ].map(([k,v]) => (
-            <div key={k} style={{ display:'flex', gap:8 }}>
-              <span style={{ color:'#aaa' }}>{k}:</span>
-              <span style={{ color:'#333', fontWeight:600 }}>{v}</span>
-            </div>
-          ))}
+        {/* Support contacts — shown to customers at the bottom of the Profile tab */}
+        <div style={{ background:'#fff', borderRadius:16, border:'1px solid #E8ECF0', padding:'24px', boxShadow:'0 2px 8px rgba(0,0,0,.04)' }}>
+          <div style={{ fontWeight:800, fontSize:16, marginBottom:6, color:'#111' }}>{t('admin.settings.support_section')}</div>
+          <div style={{ fontSize:12, color:'#aaa', marginBottom:20 }}>{t('admin.settings.support_section_hint')}</div>
+          <div style={{ marginBottom:14 }}>
+            <label style={labelStyle}>{t('admin.settings.field_telegram')}</label>
+            <input value={support.telegram} placeholder="olimfood_support"
+              onChange={e => setSupport(s => ({ ...s, telegram: e.target.value }))}
+              style={lightInput} />
+          </div>
+          <div style={{ marginBottom:14 }}>
+            <label style={labelStyle}>{t('admin.settings.field_phone')}</label>
+            <input value={support.phone} placeholder="+998 90 123 45 67"
+              onChange={e => setSupport(s => ({ ...s, phone: e.target.value }))}
+              style={lightInput} />
+          </div>
+          <button onClick={handleSaveSupport} disabled={supportSaving} style={{ width:'100%', background: supportSaving ? '#ccc' : '#E31E24', color:'#fff', border:'none', borderRadius:12, padding:'12px', fontSize:14, fontWeight:800, cursor: supportSaving ? 'not-allowed' : 'pointer' }}>
+            {supportSaving ? t('admin.settings.saving_btn') : t('admin.settings.save_btn')}
+          </button>
         </div>
       </div>
     </div>

@@ -170,6 +170,8 @@
       "field_step_hint": "На столько меняется количество при +/− у покупателя, напр: 0.5 для кг, 50 для г",
       "field_net_weight": "Чистый вес (1 шт, г)",
       "field_net_weight_hint": "Показывается покупателю на странице товара",
+      "field_min_qty": "Минимальный заказ",
+      "field_min_qty_hint": "Меньше этого покупатель заказать не сможет, напр: 1 для шт, 0.5 для кг",
       "field_category": "Категория *",
       "upload_btn": "Загрузить с устройства",
       "change_img": "Выбрать другое фото",
@@ -328,6 +330,10 @@
       "active_session": "● Активная сессия",
       "logged_in_text": "Вы вошли в систему",
       "logout_btn": "Выйти из системы",
+      "support_section": "Связь для покупателей",
+      "support_section_hint": "Отображается внизу раздела «Профиль»",
+      "field_telegram": "Telegram (username или ссылка)",
+      "field_phone": "Номер телефона",
       "system_section": "О системе",
       "sys_project": "Проект",
       "sys_version": "Версия",
@@ -374,7 +380,9 @@
     "orders_title": "История заказов",
     "no_telegram": "Откройте приложение через Telegram, чтобы видеть историю заказов",
     "no_orders": "У вас пока нет заказов",
-    "items_count": "{{count}} товаров"
+    "items_count": "{{count}} товаров",
+    "support_title": "Связь с нами",
+    "call_us": "Позвонить нам"
   },
   "header": {
     "dark_mode": "Тёмная тема",

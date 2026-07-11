@@ -65,6 +65,7 @@ class ProductBase(BaseModel):
     price: float
     unit: str = "dona"          # dona | kg | gr
     step: float = Field(default=0.5, gt=0)   # qty +/- increment when unit == kg or gr
+    min_qty: Optional[float] = Field(default=None, gt=0)   # minimum orderable qty; falls back to step
     net_weight: Optional[float] = Field(default=None, gt=0)   # netto weight in grams of 1 dona
     emoji: str = "🍽️"
     image_url: str = ""
@@ -92,6 +93,7 @@ class ProductUpdate(BaseModel):
     price: Optional[float] = None
     unit: Optional[str] = None
     step: Optional[float] = Field(default=None, gt=0)
+    min_qty: Optional[float] = Field(default=None, gt=0)
     net_weight: Optional[float] = Field(default=None, gt=0)
     emoji: Optional[str] = None
     image_url: Optional[str] = None

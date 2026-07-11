@@ -170,6 +170,8 @@
       "field_step_hint": "Xaridor + / − bosganda miqdor shuncha o'zgaradi, mas: kg uchun 0.5, g uchun 50",
       "field_net_weight": "Sof og'irligi (1 donada, g)",
       "field_net_weight_hint": "Mahsulot sahifasida xaridorga ko'rsatiladi",
+      "field_min_qty": "Minimal buyurtma",
+      "field_min_qty_hint": "Xaridor bundan kam buyurtma qila olmaydi, mas: dona uchun 1, kg uchun 0.5",
       "field_category": "Kategoriya *",
       "upload_btn": "Localdan rasm yuklash",
       "change_img": "Boshqa rasm tanlash",
@@ -328,6 +330,10 @@
       "active_session": "● Faol sessiya",
       "logged_in_text": "Hozir tizimga kirgansiz",
       "logout_btn": "Tizimdan chiqish",
+      "support_section": "Mijozlar uchun aloqa",
+      "support_section_hint": "Profil bo'limining pastida xaridorlarga ko'rinadi",
+      "field_telegram": "Telegram (username yoki link)",
+      "field_phone": "Telefon raqami",
       "system_section": "Tizim haqida",
       "sys_project": "Loyiha",
       "sys_version": "Versiya",
@@ -374,7 +380,9 @@
     "orders_title": "Buyurtmalar tarixi",
     "no_telegram": "Buyurtmalar tarixini ko'rish uchun ilovani Telegram orqali oching",
     "no_orders": "Hali buyurtma bermagansiz",
-    "items_count": "{{count}} ta mahsulot"
+    "items_count": "{{count}} ta mahsulot",
+    "support_title": "Aloqa",
+    "call_us": "Bizga qo'ng'iroq qiling"
   },
   "header": {
     "dark_mode": "Tungi rejim",

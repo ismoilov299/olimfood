@@ -3,16 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { getProducts, getCategories, createProduct, updateProduct, deleteProduct, uploadImage } from '../../api'
 import { buildCategoryTree } from '../../utils/categoryTree'
+import { stringifyCharacteristics } from '../../utils/characteristics'
 import LangTabs from './LangTabs'
+import CharacteristicsField from './CharacteristicsField'
 
-// Yangi maxsulot qo'shishda "Характеристикаси" maydoniga tushadigan namuna matn —
-// admin buni tahrirlashi yoki davom ettirib yozishi mumkin, majburiy shablon emas.
-const CHARACTERISTICS_TEMPLATE_UZ =
-`Маҳсулот тури: Пиширилган сарделъка.
-Қобиқ тури: "Амифлех", бу маҳсулотни ишончли ҳимоя қилишни ва янгилиги, сувлилиги ва табиий таъмини сақлашни таъминлайди.
-Қобиқ диаметри: Ø 32 мм.
-Сақлаш шартлари: +2°C дан +6°C гача бўлган ҳароратда сақланг.
-Яроқлилик муддати: Тавсия этилган сақлаш шароитларига мувофиқ 15 кун.`
+// Yangi maxsulot qo'shishda "Характеристикаси" ro'yxatiga tushadigan boshlang'ich
+// qatorlar — nomlari tayyor, qiymatlari bo'sh; admin to'ldiradi, o'zgartiradi
+// yoki yangi qator qo'shadi/o'chiradi.
+const CHARACTERISTICS_TEMPLATE_UZ = stringifyCharacteristics([
+  { label: 'Маҳсулот тури',        value: '' },
+  { label: 'Қобиқ тури',           value: '' },
+  { label: 'Қобиқ диаметри',       value: '' },
+  { label: 'Сақлаш шартлари',      value: '' },
+  { label: 'Яроқлилик муддати',    value: '' },
+])
 
 const EMPTY = {
   name_uz:'', name_uzl:'', name_ru:'',
@@ -215,8 +219,7 @@ export default function Products() {
               form={form} setForm={setForm} placeholder={t('admin.products.field_name')} />
             <LangTabs label={t('admin.products.field_desc')} baseKey="description" multiline
               form={form} setForm={setForm} placeholder={t('admin.products.field_desc')} />
-            <LangTabs label={t('admin.products.field_characteristics')} baseKey="characteristics" multiline
-              form={form} setForm={setForm} placeholder={t('admin.products.field_characteristics')} />
+            <CharacteristicsField form={form} setForm={setForm} />
             <LangTabs label={t('admin.products.field_qty')} baseKey="weight"
               form={form} setForm={setForm} placeholder="500 g, 2 dona..." />
 

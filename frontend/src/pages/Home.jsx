@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { getCategories, getProducts, getBanners, createOrder, getSetting, getMyOrders, validatePromo } from '../api'
 import useCartStore from '../store/cartStore'
 import LangSwitcher from '../components/LangSwitcher'
+import { parseCharacteristics } from '../utils/characteristics'
 
 // ─── Design tokens (spec-exact) ───────────────────────────────────────────────
 const THEMES = {
@@ -456,6 +457,7 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
   const { t: tr } = useTranslation()
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
   const rating = p.popular ? '4.9' : '4.7'
+  const characteristicRows = parseCharacteristics(p.characteristics)
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:400, background:t.bg, overflowY:'auto', fontFamily:MANROPE }}>
@@ -506,11 +508,18 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
             </div>
           </div>
 
-          {/* Characteristics — its own separate card */}
-          {p.characteristics && (
+          {/* Characteristics — its own separate card, one row per spec */}
+          {characteristicRows.length > 0 && (
             <div style={{ background:t.surface, border:`1px solid ${t.line}`, borderRadius:18, padding:'16px 18px', marginTop:14 }}>
-              <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg, marginBottom:8 }}>{tr('home.characteristics_label')}</div>
-              <p style={{ fontFamily:MANROPE, fontWeight:400, fontSize:14, lineHeight:1.65, color:t.muted, margin:0, whiteSpace:'pre-line' }}>{p.characteristics}</p>
+              <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:t.fg, marginBottom:10 }}>{tr('home.characteristics_label')}</div>
+              <div style={{ display:'flex', flexDirection:'column', gap:9 }}>
+                {characteristicRows.map((row, i) => (
+                  <div key={i} style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', gap:14 }}>
+                    {row.label && <span style={{ fontFamily:MANROPE, fontWeight:500, fontSize:13, color:t.muted, flexShrink:0 }}>{row.label}</span>}
+                    <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:13, color:t.fg, textAlign:'right' }}>{row.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

@@ -5,10 +5,19 @@ import { getProducts, getCategories, createProduct, updateProduct, deleteProduct
 import { buildCategoryTree } from '../../utils/categoryTree'
 import LangTabs from './LangTabs'
 
+// Yangi maxsulot qo'shishda "Характеристикаси" maydoniga tushadigan namuna matn —
+// admin buni tahrirlashi yoki davom ettirib yozishi mumkin, majburiy shablon emas.
+const CHARACTERISTICS_TEMPLATE_UZ =
+`Маҳсулот тури: Пиширилган сарделъка.
+Қобиқ тури: "Амифлех", бу маҳсулотни ишончли ҳимоя қилишни ва янгилиги, сувлилиги ва табиий таъмини сақлашни таъминлайди.
+Қобиқ диаметри: Ø 32 мм.
+Сақлаш шартлари: +2°C дан +6°C гача бўлган ҳароратда сақланг.
+Яроқлилик муддати: Тавсия этилган сақлаш шароитларига мувофиқ 15 кун.`
+
 const EMPTY = {
   name_uz:'', name_uzl:'', name_ru:'',
   description_uz:'', description_uzl:'', description_ru:'',
-  characteristics_uz:'', characteristics_uzl:'', characteristics_ru:'',
+  characteristics_uz: CHARACTERISTICS_TEMPLATE_UZ, characteristics_uzl:'', characteristics_ru:'',
   weight_uz:'', weight_uzl:'', weight_ru:'',
   price:'', unit:'dona', image_url:'', cat_id:'', discount:0, available:true, popular:false,
 }

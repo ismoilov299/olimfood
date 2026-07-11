@@ -6,6 +6,7 @@ import AdminLogin from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import Products from './pages/admin/Products'
 import Categories from './pages/admin/Categories'
+import Certificates from './pages/admin/Certificates'
 import Banners from './pages/admin/Banners'
 import Orders from './pages/admin/Orders'
 import Promos from './pages/admin/Promos'
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="dashboard"  element={<Dashboard />} />
           <Route path="products"   element={<Products />} />
           <Route path="categories" element={<Categories />} />
+          <Route path="certificates" element={<Certificates />} />
           <Route path="banners"    element={<Banners />} />
           <Route path="orders"     element={<Orders />} />
           <Route path="promos"     element={<Promos />} />

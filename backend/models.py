@@ -1,10 +1,17 @@
 from sqlalchemy import (
     Column, Integer, String, Float, Boolean, Text,
-    DateTime, ForeignKey, JSON
+    DateTime, ForeignKey, JSON, Table
 )
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+
+
+certificate_categories = Table(
+    "certificate_categories", Base.metadata,
+    Column("certificate_id", Integer, ForeignKey("certificates.id"), primary_key=True),
+    Column("category_id",    Integer, ForeignKey("categories.id"),    primary_key=True),
+)
 
 
 class Category(Base):
@@ -24,6 +31,22 @@ class Category(Base):
     parent   = relationship("Category", remote_side=[id], back_populates="children")
     children = relationship("Category", back_populates="parent")
     products = relationship("Product", back_populates="category")
+    certificates = relationship("Certificate", secondary=certificate_categories, back_populates="categories")
+
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    name_uz    = Column(String(150), nullable=False, default="")
+    name_uzl   = Column(String(150), default="")
+    name_ru    = Column(String(150), default="")
+    logo_url   = Column(String(500), default="")   # small badge shown on the product page
+    image_url  = Column(String(500), default="")   # full certificate scan shown when the badge is tapped
+    active     = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    categories = relationship("Category", secondary=certificate_categories, back_populates="certificates")
 
 
 class Product(Base):

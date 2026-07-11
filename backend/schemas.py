@@ -110,6 +110,44 @@ class ProductOut(ProductBase):
         from_attributes = True
 
 
+# ── Certificate ──────────────────────────────────
+class CertificateBase(BaseModel):
+    name_uz: str
+    name_uzl: str = ""
+    name_ru: str = ""
+    logo_url: str = ""
+    image_url: str = ""
+    active: bool = True
+    category_ids: List[int] = []
+
+class CertificateCreate(CertificateBase):
+    pass
+
+class CertificateUpdate(BaseModel):
+    name_uz: Optional[str] = None
+    name_uzl: Optional[str] = None
+    name_ru: Optional[str] = None
+    logo_url: Optional[str] = None
+    image_url: Optional[str] = None
+    active: Optional[bool] = None
+    category_ids: Optional[List[int]] = None
+
+class CertificateOut(BaseModel):
+    id: int
+    name_uz: str
+    name_uzl: str = ""
+    name_ru: str = ""
+    logo_url: str = ""
+    image_url: str = ""
+    active: bool = True
+    created_at: datetime
+    category_ids: List[int] = []
+    name: str = ""                 # so'ralgan tilda hal qilingan nom
+
+    class Config:
+        from_attributes = True
+
+
 # ── Banner ───────────────────────────────────────
 class BannerBase(BaseModel):
     mode: str = "design"

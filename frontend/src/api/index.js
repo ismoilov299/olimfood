@@ -28,6 +28,12 @@ export const createBanner = (data) => api.post('/banners', data)
 export const updateBanner = (id, data) => api.put(`/banners/${id}`, data)
 export const deleteBanner = (id) => api.delete(`/banners/${id}`)
 
+// ── Certificates ───────────────────────────────────
+export const getCertificates = (params) => api.get('/certificates', { params })
+export const createCertificate = (data) => api.post('/certificates', data)
+export const updateCertificate = (id, data) => api.put(`/certificates/${id}`, data)
+export const deleteCertificate = (id) => api.delete(`/certificates/${id}`)
+
 // ── Orders ─────────────────────────────────────────
 export const getOrders = (params) => api.get('/orders', { params })
 export const getMyOrders = (telegram_chat_id) => api.get('/orders/my', { params: { telegram_chat_id } })

@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getCategories, getProducts, getBanners, createOrder, getSetting, getMyOrders, validatePromo } from '../api'
+import { getCategories, getProducts, getBanners, getCertificates, createOrder, getSetting, getMyOrders, validatePromo } from '../api'
 import useCartStore from '../store/cartStore'
 import LangSwitcher from '../components/LangSwitcher'
 import { parseCharacteristics } from '../utils/characteristics'
+import { certificatesForCategory } from '../utils/certificateMatch'
 
 // ─── Design tokens (spec-exact) ───────────────────────────────────────────────
 const THEMES = {
@@ -450,14 +451,16 @@ function FlyingItem({ from, to, image, color, onDone }) {
 }
 
 // ─── Product Detail ───────────────────────────────────────────────────────────
-function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
+function ProductDetail({ p, t, onClose, onAddCart, liked, onLike, categories=[], certificates=[] }) {
   const step = qtyStep(p.unit)
   const [qty, setQty] = useState(step)
   const [imgFull, setImgFull] = useState(false)
+  const [certView, setCertView] = useState(null)
   const { t: tr } = useTranslation()
   const final  = p.discount > 0 ? Math.round(p.price * (1 - p.discount/100)) : p.price
   const rating = p.popular ? '4.9' : '4.7'
   const characteristicRows = parseCharacteristics(p.characteristics)
+  const applicableCerts = certificatesForCategory(certificates, categories, p.cat_id)
 
   return (
     <div style={{ position:'fixed', inset:0, zIndex:400, background:t.bg, overflowY:'auto', fontFamily:MANROPE }}>
@@ -536,6 +539,22 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
               </button>
             </div>
           </div>
+
+          {/* Certificates — bottom of the sheet; tap a badge to view the full certificate */}
+          {applicableCerts.length > 0 && (
+            <div style={{ display:'flex', flexWrap:'wrap', gap:10, marginTop:14 }}>
+              {applicableCerts.map(c => (
+                <button key={c.id} onClick={() => setCertView(c)}
+                  style={{ display:'flex', alignItems:'center', gap:9, background:t.surface, border:`1px solid ${t.line}`, borderRadius:14, padding:'8px 14px 8px 8px', cursor:'pointer' }}>
+                  {c.logo_url
+                    ? <img src={c.logo_url} alt={c.name} style={{ width:32, height:32, borderRadius:9, objectFit:'cover', flexShrink:0 }} />
+                    : <span style={{ fontSize:18 }}>🏅</span>
+                  }
+                  <span style={{ fontFamily:MANROPE, fontWeight:700, fontSize:12.5, color:t.fg }}>{c.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -561,6 +580,23 @@ function ProductDetail({ p, t, onClose, onAddCart, liked, onLike }) {
           </button>
           <img src={p.image_url} alt={p.name} className="anim-lightbox-img"
             style={{ maxWidth:'100%', maxHeight:'100%', objectFit:'contain', display:'block' }} />
+        </div>
+      )}
+
+      {/* Fullscreen certificate viewer — tap a certificate badge to open */}
+      {certView && (
+        <div className="anim-lightbox" onClick={() => setCertView(null)}
+          style={{ position:'fixed', inset:0, zIndex:600, background:'rgba(6,4,3,.97)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:'zoom-out' }}>
+          <button onClick={() => setCertView(null)} style={{ position:'absolute', top:54, right:20, width:44, height:44, borderRadius:14, border:'1px solid rgba(255,255,255,.18)', background:'rgba(255,255,255,.1)', backdropFilter:'blur(16px) saturate(170%)', WebkitBackdropFilter:'blur(16px) saturate(170%)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+            <ICross s={18} c="#fff" />
+          </button>
+          {certView.image_url
+            ? <img src={certView.image_url} alt={certView.name} className="anim-lightbox-img"
+                style={{ maxWidth:'100%', maxHeight:'82%', objectFit:'contain', display:'block' }} />
+            : <img src={certView.logo_url} alt={certView.name} className="anim-lightbox-img"
+                style={{ maxWidth:'60%', maxHeight:'60%', objectFit:'contain', display:'block' }} />
+          }
+          <div style={{ fontFamily:MANROPE, fontWeight:700, fontSize:14, color:'#fff', marginTop:18 }}>{certView.name}</div>
         </div>
       )}
     </div>
@@ -951,6 +987,7 @@ export default function Home() {
   const [categories, setCats]      = useState([])
   const [products,   setProducts]  = useState([])
   const [banners,    setBanners]   = useState([])
+  const [certificates, setCertificates] = useState([])
   const [allCatImg,  setAllCatImg] = useState('')
   const [activeCat,  setActiveCat] = useState(null)
   const [subPath,    setSubPath]   = useState([])   // drill-down chain of selected sub-category ids — supports any nesting depth
@@ -1070,6 +1107,7 @@ export default function Home() {
   useEffect(() => {
     getBanners().then(r => setBanners(r.data.filter(b => b.active)))
     getSetting('all_category_image').then(r => setAllCatImg(r.data.value || '')).catch(() => {})
+    getCertificates({ active: true }).then(r => setCertificates(r.data)).catch(() => {})
   }, [])
 
   useEffect(() => {
@@ -1154,7 +1192,8 @@ export default function Home() {
   if (detail) return (
     <ProductDetail p={detail} t={t} onClose={() => setDetail(null)}
       onAddCart={qty => handleAdd(detail, qty)}
-      liked={liked.has(detail.id)} onLike={() => toggleLike(detail.id)} />
+      liked={liked.has(detail.id)} onLike={() => toggleLike(detail.id)}
+      categories={categories} certificates={certificates} />
   )
 
   // ── Cart screen ──

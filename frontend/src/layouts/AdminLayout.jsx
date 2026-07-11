@@ -15,6 +15,7 @@ const IGear     = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="no
 const ITicket   = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 9a3 3 0 010 6v2a2 2 0 002 2h16a2 2 0 002-2v-2a3 3 0 010-6V7a2 2 0 00-2-2H4a2 2 0 00-2 2z"/><line x1="13" y1="5" x2="13" y2="19"/></svg>
 const IBadge    = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg>
 const ILogout   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+const IStar     = () => <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
 
 export default function AdminLayout() {
   const { logout, admin } = useAuthStore()
@@ -29,6 +30,7 @@ export default function AdminLayout() {
     { to:'certificates', label: t('admin.nav.certificates'), Icon:IBadge },
     { to:'banners',    label: t('admin.nav.banners'),    Icon:IImage   },
     { to:'orders',     label: t('admin.nav.orders'),     Icon:IPackage },
+    { to:'feedback',   label: t('admin.nav.feedback'),   Icon:IStar    },
     { to:'promos',     label: t('admin.nav.promos'),     Icon:ITicket  },
     { to:'settings',   label: t('admin.nav.settings'),   Icon:IGear    },
   ]

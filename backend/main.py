@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from routers import auth, categories, products, banners, orders, upload, stats, settings, promos, certificates
+from routers import auth, categories, products, banners, orders, upload, stats, settings, promos, certificates, feedback
 from seed import seed
 
 # The database schema is managed by Alembic — run `alembic upgrade head`
@@ -42,6 +42,7 @@ app.include_router(stats.router)
 app.include_router(settings.router)
 app.include_router(promos.router)
 app.include_router(certificates.router)
+app.include_router(feedback.router)
 
 
 @app.get("/")

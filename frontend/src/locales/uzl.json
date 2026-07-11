@@ -114,6 +114,7 @@
       "certificates": "Sertifikatlar",
       "banners": "Bannerlar",
       "orders": "Buyurtmalar",
+      "feedback": "Fikr-mulohazalar",
       "settings": "Sozlamalar",
       "role": "Administrator",
       "logout": "Chiqish",
@@ -317,6 +318,16 @@
       "toast_status": "✅ Status yangilandi",
       "toast_deleted": "🗑️ O'chirildi"
     },
+    "feedback": {
+      "title": "Fikr-mulohazalar",
+      "avg_delivery": "O'rtacha — yetkazib berish",
+      "avg_product": "O'rtacha — mahsulot",
+      "total_count": "Jami fikrlar",
+      "order_ref": "Buyurtma #{{id}}",
+      "col_delivery": "Yetkazish",
+      "col_product": "Mahsulot",
+      "no_feedback": "Hali fikrlar yo'q"
+    },
     "settings": {
       "title": "Sozlamalar",
       "password_section": "Parolni o'zgartirish",
@@ -383,6 +394,18 @@
     "items_count": "{{count}} ta mahsulot",
     "support_title": "Aloqa",
     "call_us": "Bizga qo'ng'iroq qiling"
+  },
+  "feedback": {
+    "title": "Fikr-mulohaza",
+    "order_label": "Buyurtma #{{id}}",
+    "delivery_label": "Yetkazib berish",
+    "product_label": "Mahsulot sifati",
+    "comment_label": "Fikringiz (ixtiyoriy)",
+    "comment_placeholder": "Nima yoqdi, nima yoqmadi?...",
+    "submit_btn": "Fikr bildirish",
+    "thanks": "Fikringiz uchun rahmat!",
+    "error": "Xatolik yuz berdi. Keyinroq qayta urinib ko'ring.",
+    "not_delivered": "Bu buyurtma hali yetkazilmagan."
   },
   "header": {
     "dark_mode": "Tungi rejim",

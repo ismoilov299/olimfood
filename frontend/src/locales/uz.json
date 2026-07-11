@@ -122,6 +122,7 @@
       "certificates": "Сертификатлар",
       "banners": "Баннерлар",
       "orders": "Буюртмалар",
+      "feedback": "Фикр-мулоҳазалар",
       "promos": "Промокодлар",
       "settings": "Созламалар",
       "role": "Администратор",
@@ -325,6 +326,16 @@
       "toast_status": "✅ Статус янгиланди",
       "toast_deleted": "🗑️ Ўчирилди"
     },
+    "feedback": {
+      "title": "Фикр-мулоҳазалар",
+      "avg_delivery": "Ўртача — етказиб бериш",
+      "avg_product": "Ўртача — маҳсулот",
+      "total_count": "Жами фикрлар",
+      "order_ref": "Буюртма #{{id}}",
+      "col_delivery": "Етказиш",
+      "col_product": "Маҳсулот",
+      "no_feedback": "Ҳали фикрлар йўқ"
+    },
     "settings": {
       "title": "Созламалар",
       "password_section": "Паролни ўзгартириш",
@@ -391,6 +402,18 @@
     "items_count": "{{count}} та маҳсулот",
     "support_title": "Алоқа",
     "call_us": "Бизга қўнғироқ қилинг"
+  },
+  "feedback": {
+    "title": "Фикр-мулоҳаза",
+    "order_label": "Буюртма #{{id}}",
+    "delivery_label": "Етказиб бериш",
+    "product_label": "Маҳсулот сифати",
+    "comment_label": "Фикрингиз (ихтиёрий)",
+    "comment_placeholder": "Нима ёқди, нима ёқмади?...",
+    "submit_btn": "Фикр билдириш",
+    "thanks": "Фикрингиз учун раҳмат!",
+    "error": "Хатолик юз берди. Кейинроқ қайта уриниб кўринг.",
+    "not_delivered": "Бу буюртма ҳали етказилмаган."
   },
   "header": {
     "dark_mode": "Тунги режим",

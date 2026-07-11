@@ -51,6 +51,11 @@ export const deletePromo = (id) => api.delete(`/promos/${id}`)
 export const validatePromo = (code, subtotal) =>
   api.get('/promos/validate', { params: { code, subtotal } })
 
+// ── Feedback ───────────────────────────────────────
+export const getFeedbackList = () => api.get('/feedback')
+export const getFeedbackContext = (orderId) => api.get(`/feedback/${orderId}`)
+export const submitFeedback = (orderId, data) => api.post(`/feedback/${orderId}`, data)
+
 // ── Stats ──────────────────────────────────────────
 export const getStats = () => api.get('/stats')
 

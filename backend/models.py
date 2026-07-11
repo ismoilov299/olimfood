@@ -134,6 +134,21 @@ class Order(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
+    feedback = relationship("Feedback", back_populates="order", uselist=False, cascade="all, delete-orphan")
+
+
+class Feedback(Base):
+    __tablename__ = "feedback"
+
+    id               = Column(Integer, primary_key=True, index=True)
+    order_id         = Column(Integer, ForeignKey("orders.id"), nullable=False, unique=True, index=True)
+    delivery_rating  = Column(Integer, nullable=False)   # 1-5
+    product_rating   = Column(Integer, nullable=False)   # 1-5
+    comment          = Column(Text, default="")
+    created_at       = Column(DateTime(timezone=True), server_default=func.now())
+
+    order = relationship("Order", back_populates="feedback")
+
 
 class PromoCode(Base):
     __tablename__ = "promo_codes"

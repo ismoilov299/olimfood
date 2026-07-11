@@ -248,6 +248,29 @@ class OrderOut(BaseModel):
         from_attributes = True
 
 
+# ── Feedback ─────────────────────────────────────
+class FeedbackCreate(BaseModel):
+    delivery_rating: int = Field(ge=1, le=5)
+    product_rating: int = Field(ge=1, le=5)
+    comment: str = ""
+
+class FeedbackOut(FeedbackCreate):
+    id: int
+    order_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class FeedbackContextOut(BaseModel):
+    order_id: int
+    status: str
+    feedback: Optional[FeedbackOut] = None
+
+class FeedbackAdminOut(FeedbackOut):
+    customer_name: str = ""
+
+
 # ── Promo codes ─────────────────────────────────
 class PromoCodeBase(BaseModel):
     code: str

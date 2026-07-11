@@ -47,8 +47,19 @@ def _tg_send(chat_id, text: str, reply_markup: dict | None = None) -> None:
         pass
 
 
+def _feedback_kb(order_id: int) -> dict | None:
+    """Inline button linking to the feedback form, sent once an order is delivered."""
+    base = os.getenv("WEBAPP_URL", "").rstrip("/")
+    if not base:
+        return None
+    return {"inline_keyboard": [[
+        {"text": "⭐ Fikr bildirish", "url": f"{base}/feedback/{order_id}"},
+    ]]}
+
+
 def _tg_notify(chat_id: str, order_id: int, status: str) -> None:
-    _tg_send(chat_id, _NOTIFY_MSGS.get(status, "").replace("{id}", str(order_id)))
+    reply_markup = _feedback_kb(order_id) if status == "delivered" else None
+    _tg_send(chat_id, _NOTIFY_MSGS.get(status, "").replace("{id}", str(order_id)), reply_markup=reply_markup)
 
 
 def _admin_kb(oid: int) -> dict:

@@ -114,6 +114,7 @@
       "certificates": "Сертификаты",
       "banners": "Баннеры",
       "orders": "Заказы",
+      "feedback": "Отзывы",
       "settings": "Настройки",
       "role": "Администратор",
       "logout": "Выйти",
@@ -317,6 +318,16 @@
       "toast_status": "✅ Статус обновлён",
       "toast_deleted": "🗑️ Удалено"
     },
+    "feedback": {
+      "title": "Отзывы",
+      "avg_delivery": "Среднее — доставка",
+      "avg_product": "Среднее — товар",
+      "total_count": "Всего отзывов",
+      "order_ref": "Заказ #{{id}}",
+      "col_delivery": "Доставка",
+      "col_product": "Товар",
+      "no_feedback": "Пока нет отзывов"
+    },
     "settings": {
       "title": "Настройки",
       "password_section": "Изменить пароль",
@@ -383,6 +394,18 @@
     "items_count": "{{count}} товаров",
     "support_title": "Связь с нами",
     "call_us": "Позвонить нам"
+  },
+  "feedback": {
+    "title": "Отзыв",
+    "order_label": "Заказ #{{id}}",
+    "delivery_label": "Доставка",
+    "product_label": "Качество товара",
+    "comment_label": "Ваш отзыв (необязательно)",
+    "comment_placeholder": "Что понравилось, что нет?...",
+    "submit_btn": "Оставить отзыв",
+    "thanks": "Спасибо за ваш отзыв!",
+    "error": "Произошла ошибка. Попробуйте позже.",
+    "not_delivered": "Этот заказ ещё не доставлен."
   },
   "header": {
     "dark_mode": "Тёмная тема",
